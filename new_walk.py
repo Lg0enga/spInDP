@@ -18,7 +18,7 @@ def resetMoves():
 
 
 def waitForServos():
-    while firstServoMove and secondServoMove and thirdServoMove is None:
+    while firstServoMove is None and secondServoMove is None and thirdServoMove is None:
         time.sleep(0.00005)
     resetMoves()
 
