@@ -7,8 +7,10 @@ chain = DxlChain("/dev/ttyAMA0", rate=1000000)
 
 speed = 1
 
+
 def degreesToBits(degrees):
     return (1023 * degrees) / 300
+
 
 def walk():
     chain.goto(10, degreesToBits(150), speed=int(512 * speed))
@@ -34,6 +36,7 @@ def walk():
     chain.goto(12, degreesToBits(77.1), speed=int(371 * speed))
 
     chain.disable()
+
 
 def main():
     walk()
