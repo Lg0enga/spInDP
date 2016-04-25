@@ -6,44 +6,46 @@ __author__ = 'Jelmer Visser'
 
 speed = 1
 
-firstServoMove = None
-secondServoMove = None
-thirdServoMove = None
+motors = {10, 11, 12}
 
+moving = False
 
-def resetMoves():
-    firstServoMove = None
-    secondServoMove = None
-    thirdServoMove = None
-
-
-def waitForServos():
-    while firstServoMove is None and secondServoMove is None and thirdServoMove is None:
-        time.sleep(0.00005)
-    resetMoves()
-
+def wait_stopped(self, ids=None):
+    """
+    Wait for a specific motor or all motors on the chain to have stopped moving.
+    This is a blocking function.
+    """
+    while True:
+        moving = False
+        for id in ids:
+            if ax12.readPosition(id) != 0:
+                moving = True
+                break
+        if not moving:
+            break
+        time.sleep(0.1)
 
 def walk():
     while True:
         firstServoMove = ax12.moveSpeed(10, 512, int(512 * speed))
         secondServoMove = ax12.moveSpeed(11, 355, int(245 * speed))
         thirdServoMove = ax12.moveSpeed(12, 110, int(511 * speed))
-        waitForServos()
+        wait_stopped(motors)
         firstServoMove = ax12.moveSpeed(10, 665, int(512 * speed))
         secondServoMove = ax12.moveSpeed(11, 428, int(245 * speed))
         thirdServoMove = ax12.moveSpeed(12, 263, int(511 * speed))
-        waitForServos()
+        wait_stopped(motors)
         secondServoMove = ax12.moveSpeed(11, 467, int(512 * speed))
         thirdServoMove = ax12.moveSpeed(12, 291, int(371 * speed))
-        waitForServos()
+        wait_stopped(motors)
         firstServoMove = ax12.moveSpeed(10, 512, int(512 * speed))
         secondServoMove = ax12.moveSpeed(11, 404, int(209 * speed))
         thirdServoMove = ax12.moveSpeed(12, 138, int(509 * speed))
-        waitForServos()
+        wait_stopped(motors)
         firstServoMove = ax12.moveSpeed(10, 358, int(512 * speed))
         secondServoMove = ax12.moveSpeed(11, 467, int(209 * speed))
         thirdServoMove = ax12.moveSpeed(12, 291, int(509 * speed))
-        waitForServos()
+        wait_stopped(motors)
         secondServoMove = ax12.moveSpeed(11, 428, int(512 * speed))
         thirdServoMove = ax12.moveSpeed(12, 263, int(371 * speed))
 
