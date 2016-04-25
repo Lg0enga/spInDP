@@ -6,8 +6,6 @@ __author__ = 'Jelmer Visser'
 
 speed = 1
 
-motors = {10, 11, 12}
-
 moving = False
 
 def wait_stopped(self, ids=None):
@@ -30,25 +28,25 @@ def walk():
         firstServoMove = ax12.moveSpeed(10, 512, int(512 * speed))
         secondServoMove = ax12.moveSpeed(11, 355, int(245 * speed))
         thirdServoMove = ax12.moveSpeed(12, 110, int(511 * speed))
-        wait_stopped(motors)
+        wait_stopped({10, 11, 12})
         firstServoMove = ax12.moveSpeed(10, 665, int(512 * speed))
         secondServoMove = ax12.moveSpeed(11, 428, int(245 * speed))
         thirdServoMove = ax12.moveSpeed(12, 263, int(511 * speed))
-        wait_stopped(motors)
+        wait_stopped({10, 11, 12})
         secondServoMove = ax12.moveSpeed(11, 467, int(512 * speed))
         thirdServoMove = ax12.moveSpeed(12, 291, int(371 * speed))
-        wait_stopped(motors)
+        wait_stopped({11, 12})
         firstServoMove = ax12.moveSpeed(10, 512, int(512 * speed))
         secondServoMove = ax12.moveSpeed(11, 404, int(209 * speed))
         thirdServoMove = ax12.moveSpeed(12, 138, int(509 * speed))
-        wait_stopped(motors)
+        wait_stopped({10, 11, 12})
         firstServoMove = ax12.moveSpeed(10, 358, int(512 * speed))
         secondServoMove = ax12.moveSpeed(11, 467, int(209 * speed))
         thirdServoMove = ax12.moveSpeed(12, 291, int(509 * speed))
-        wait_stopped(motors)
+        wait_stopped({10, 11, 12})
         secondServoMove = ax12.moveSpeed(11, 428, int(512 * speed))
         thirdServoMove = ax12.moveSpeed(12, 263, int(371 * speed))
-
+        wait_stopped({11, 12})
 
 def main():
     walk()
