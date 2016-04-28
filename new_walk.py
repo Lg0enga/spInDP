@@ -1,14 +1,21 @@
 import time
 import array
+import math
 from ax12 import Ax12
 ax12 = Ax12()
 
 __author__ = 'Jelmer Visser'
 
 speed = 2
+x = 150
+y = 150
+z = 60
+z1 = 20
+CL = 53
+FL = 83
+TL = 126
 
 moving = False
-
 
 def wait_stopped():
     """
@@ -25,8 +32,6 @@ def wait_stopped():
         except Exception:
             moving = True
 
-        time.sleep(0.01)
-
 
 def degreesToBits(degrees):
     return int((1023 * degrees) / 300)
@@ -34,27 +39,28 @@ def degreesToBits(degrees):
 
 def walk():
     while True:
-        firstServoMove = ax12.moveSpeed(10, degreesToBits(150), int(1023 * speed))
-        secondServoMove = ax12.moveSpeed(11, degreesToBits(104), int(491 * speed))
-        thirdServoMove = ax12.moveSpeed(12, degreesToBits(32.2), int(1021 * speed))
-        time.sleep(0.20)
-        firstServoMove = ax12.moveSpeed(10, degreesToBits(195), int(1023 * speed))
-        secondServoMove = ax12.moveSpeed(11, degreesToBits(125.6), int(491 * speed))
-        thirdServoMove = ax12.moveSpeed(12, degreesToBits(77.1), int(1021 * speed))
-        time.sleep(0.20)
-        secondServoMove = ax12.moveSpeed(11, degreesToBits(137), int(1023 * speed))
-        time.sleep(0.1)
-        firstServoMove = ax12.moveSpeed(10, degreesToBits(150), int(1023 * speed))
-        secondServoMove = ax12.moveSpeed(11, degreesToBits(118.6), int(417 * speed))
-        thirdServoMove = ax12.moveSpeed(12, degreesToBits(40.6), int(1018 * speed))
-        time.sleep(0.20)
-        firstServoMove = ax12.moveSpeed(10, degreesToBits(105), int(1023 * speed))
-        secondServoMove = ax12.moveSpeed(11, degreesToBits(137), int(417 * speed))
-        thirdServoMove = ax12.moveSpeed(12, degreesToBits(85.4), int(1018 * speed))
-        time.sleep(0.20)
-        secondServoMove = ax12.moveSpeed(11, degreesToBits(125.6), int(1023 * speed))
-        thirdServoMove = ax12.moveSpeed(12, degreesToBits(77.1), int(741 * speed))
-        time.sleep(0.1)
+        firstServoMove = ax12.moveSpeed(10, 512, int(512 * speed))
+        secondServoMove = ax12.moveSpeed(11, 355, int(245 * speed))
+        thirdServoMove = ax12.moveSpeed(12, 110, int(511 * speed))
+        time.sleep(0.25)
+        firstServoMove = ax12.moveSpeed(10, 665, int(512 * speed))
+        secondServoMove = ax12.moveSpeed(11, 428, int(245 * speed))
+        thirdServoMove = ax12.moveSpeed(12, 263, int(511 * speed))
+        time.sleep(0.25)
+        secondServoMove = ax12.moveSpeed(11, 467, int(512 * speed))
+        thirdServoMove = ax12.moveSpeed(12, 291, int(371 * speed))
+        time.sleep(0.14)
+        firstServoMove = ax12.moveSpeed(10, 512, int(512 * speed))
+        secondServoMove = ax12.moveSpeed(11, 404, int(209 * speed))
+        thirdServoMove = ax12.moveSpeed(12, 138, int(509 * speed))
+        time.sleep(0.25)
+        firstServoMove = ax12.moveSpeed(10, 358, int(512 * speed))
+        secondServoMove = ax12.moveSpeed(11, 467, int(209 * speed))
+        thirdServoMove = ax12.moveSpeed(12, 291, int(509 * speed))
+        time.sleep(0.25)
+        secondServoMove = ax12.moveSpeed(11, 428, int(512 * speed))
+        thirdServoMove = ax12.moveSpeed(12, 263, int(371 * speed))
+        time.sleep(0.14)
 
 def main():
     walk()

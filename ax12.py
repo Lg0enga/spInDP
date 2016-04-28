@@ -123,13 +123,13 @@ class Ax12:
     LEFT = 0
     RIGTH = 1
     RX_TIME_OUT = 10
-    TX_DELAY_TIME = 0.00002
+    TX_DELAY_TIME = 0.00004
 
     # RPi constants
     RPI_DIRECTION_PIN = 18
     RPI_DIRECTION_TX = GPIO.HIGH
     RPI_DIRECTION_RX = GPIO.LOW
-    RPI_DIRECTION_SWITCH_DELAY = 0.0001
+    RPI_DIRECTION_SWITCH_DELAY = 0.001
 
     # static variables
     port = None
@@ -137,7 +137,7 @@ class Ax12:
 
     def __init__(self):
         if(Ax12.port == None):
-            Ax12.port = Serial("/dev/ttyAMA0", baudrate=57142, timeout=0.001)
+            Ax12.port = Serial("/dev/ttyAMA0", baudrate=1000000, timeout=0.0001)
         if(not Ax12.gpioSet):
             GPIO.setwarnings(False)
             GPIO.setmode(GPIO.BCM)
@@ -170,6 +170,7 @@ class Ax12:
     def readData(self,id):
         self.direction(Ax12.RPI_DIRECTION_RX)
         reply = Ax12.port.read(5) # [0xff, 0xff, origin, length, error]
+
         try:
             assert ord(reply[0]) == 0xFF
         except:
@@ -688,7 +689,7 @@ class Ax12:
         return self.readData(id)
 
 
-    def learnServos(self,minValue=1, maxValue=6, verbose=False) :
+    def learnServos(self,minValue=1, maxValue=15, verbose=False) :
         servoList = []
         for i in range(minValue, maxValue + 1):
             try :
