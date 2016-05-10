@@ -689,7 +689,7 @@ class Ax12:
         return self.readData(id)
 
 
-    def learnServos(self,minValue=1, maxValue=15, verbose=False) :
+    def learnServos(self,minValue=1, maxValue=80, verbose=False) :
         servoList = []
         for i in range(minValue, maxValue + 1):
             try :
