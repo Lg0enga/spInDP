@@ -5,22 +5,18 @@ from PyQt4 import QtCore, QtGui, uic
 import socket
 
 
-qtCreatorFile = "loop.ui" # Enter file here.
+qtCreatorFile = "video.ui" # Enter file here.
 
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
 
-class LoopWindow(QtGui.QMainWindow, Ui_MainWindow):
+class VideoWindow(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         QtGui.QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
         self.setupUi(self)
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.setGeometry(0, 30, 491, 298)
-        self.BackButton.clicked.connect(self.BackClick)
-        self.Loop1Button.clicked.connect(self.Loop1Click)
-        self.Loop2Button.clicked.connect(self.Loop2Click)
-        self.Loop3Button.clicked.connect(self.Loop3Click)
-        self.WalkyButton.clicked.connect(QtCore.QCoreApplication.quit)
+        self.BackButton.clicked.connect(self.BackClick)        
 
     def BackClick(self):
         self.close()
@@ -49,6 +45,6 @@ class LoopWindow(QtGui.QMainWindow, Ui_MainWindow):
         
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
-    window = LoopWindow()
+    window = VideoWindow()
     window.show()
     sys.exit(app.exec_())

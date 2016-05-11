@@ -2,6 +2,12 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -10,11 +16,17 @@
     <height>291</height>
    </rect>
   </property>
+  <property name="contextMenuPolicy">
+   <enum>Qt::NoContextMenu</enum>
+  </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QPushButton {
+   <string notr="true">QMainWindow{
+border: none;
+}
+QPushButton {
 color: white;
 background-color: #2ecc71;
 border-width: 1px;
@@ -51,6 +63,15 @@ border-color: #3498db;
 border: none;
 }</string>
   </property>
+  <property name="toolButtonStyle">
+   <enum>Qt::ToolButtonIconOnly</enum>
+  </property>
+  <property name="dockNestingEnabled">
+   <bool>false</bool>
+  </property>
+  <property name="unifiedTitleAndToolBarOnMac">
+   <bool>false</bool>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QPushButton" name="BackButton">
     <property name="geometry">
@@ -80,7 +101,7 @@ border: none;
      </size>
     </property>
    </widget>
-   <widget class="QPushButton" name="ExitButton_3">
+   <widget class="QPushButton" name="Loop1Button">
     <property name="geometry">
      <rect>
       <x>320</x>
@@ -95,7 +116,7 @@ border: none;
      </font>
     </property>
     <property name="text">
-     <string>Dans 1</string>
+     <string>1</string>
     </property>
    </widget>
    <widget class="QPushButton" name="ExitButton_4">
@@ -113,10 +134,10 @@ border: none;
      </font>
     </property>
     <property name="text">
-     <string>Special Dance</string>
+     <string>HOT!</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="ExitButton_5">
+   <widget class="QPushButton" name="Loop3Button">
     <property name="geometry">
      <rect>
       <x>320</x>
@@ -131,7 +152,7 @@ border: none;
      </font>
     </property>
     <property name="text">
-     <string>Dans 3</string>
+     <string>3</string>
     </property>
    </widget>
    <widget class="QPushButton" name="ExitButton_6">
@@ -149,10 +170,10 @@ border: none;
      </font>
     </property>
     <property name="text">
-     <string>Spider dance</string>
+     <string>Prik</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="TangoButton">
+   <widget class="QPushButton" name="WalkyButton">
     <property name="geometry">
      <rect>
       <x>0</x>
@@ -167,10 +188,10 @@ border: none;
      </font>
     </property>
     <property name="text">
-     <string>Tango</string>
+     <string>4</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="ExitButton_8">
+   <widget class="QPushButton" name="Loop2Button">
     <property name="geometry">
      <rect>
       <x>320</x>
@@ -185,7 +206,7 @@ border: none;
      </font>
     </property>
     <property name="text">
-     <string>Dans 2</string>
+     <string>2</string>
     </property>
    </widget>
    <widget class="QLabel" name="label">
@@ -235,7 +256,7 @@ border: none;
       <enum>Qt::PlainText</enum>
      </property>
      <property name="pixmap">
-      <pixmap>img/dance.png</pixmap>
+      <pixmap>img/balloon.png</pixmap>
      </property>
      <property name="scaledContents">
       <bool>true</bool>
