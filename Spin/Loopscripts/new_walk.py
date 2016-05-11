@@ -4,6 +4,7 @@ import math
 import csv
 import locale
 import operator
+import collections
 locale.setlocale( locale.LC_ALL, 'nl_NL.UTF-8' )
 from ax12 import Ax12
 ax12 = Ax12()
@@ -115,17 +116,13 @@ class Walk:
 
     def beginPosition(self):
         # while True:
-            with open('IK_Update__10052016.csv', 'rb') as f:
+            with open('IK_Update__11052016.csv', 'rb') as f:
                 records = csv.DictReader(f, delimiter=';')
 
-                newPositions = {}
-                currentPositions = {}
-                deltaPositions = {}
-                finalPositions = {}
+                maxValue = None
 
-                #get current and new positions
                 for row in records:
-                    
+
                     newPositions = {}
                     currentPositions = {}
                     deltaPositions = {}
@@ -135,26 +132,31 @@ class Walk:
                         currentPositions[servo] = ax12.readPosition(int(servo))
                         newPositions[servo] = position
 
-                    #calculate delta
                     for servo, position in newPositions.items():
-                        deltaPositions[servo] = int(currentPositions[servo]) - int(position)
+                        if int(currentPositions[servo]) - int(position) == 0:
+                            deltaPositions[servo] = 1
+                        else:
+                            deltaPositions[servo] = abs(int(currentPositions[servo]) - int(position))
 
                     for servo, position in deltaPositions.items():
-                        finalPositions[servo] = newPositions[servo], int(abs(float(deltaPositions[servo]) / float(max(deltaPositions.values())) * self.speed))
+                        maxValue = max(deltaPositions.values())
+                        finalPositions[servo] = newPositions[servo], int(float(deltaPositions[servo]) / float(maxValue) * self.speed)
+
+                    finalPositions = collections.OrderedDict(sorted(finalPositions.items()))
 
                     for servo, position_speed in finalPositions.items():
                         ax12.moveSpeed(int(servo), int(position_speed[0]), int(position_speed[1]))
 
-                    time.sleep(0.5)
+                    time.sleep(maxValue / float(205) * float(0.2))
 
 
     def oldBeginPosition(self):
-        with open('IK_Update__10052016.csv', 'rb') as f:
+        with open('IK_Update__10052016_old.csv', 'rb') as f:
             records = csv.DictReader(f, delimiter=';')
 
             for row in records:
                 for servo, position in row.items():
-                    ax12.moveSpeed(int(servo), int(position), 250)
+                    ax12.moveSpeed(int(servo), int(position), 1023)
 
     def walk(self):
         with open('IK_Update__09052016.csv', 'rb') as f:
