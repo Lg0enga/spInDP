@@ -11,13 +11,16 @@ walk = Walk()
 
 #ax12.setID(1, 62)
 
-#walk.beginPosition()
+walk.oldBeginPosition()
 
-while True:
-    try:
-        walk.beginPosition()
-    except ax12.timeoutError:
-        print "lol"
+# walk.setReturnDelayTime()
+# walk.getReturnDelayTime()
+
+# while True:
+#     try:
+#         walk.beginPosition()
+#     except ax12.timeoutError:
+#         print "timeout"
 
 #walk.set_speed(0.3)
 # Thread(target = walk.beginPosition).start()

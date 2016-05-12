@@ -123,13 +123,13 @@ class Ax12:
     LEFT = 0
     RIGTH = 1
     RX_TIME_OUT = 10
-    TX_DELAY_TIME = 0.00004
+    TX_DELAY_TIME = 0.00005
 
     # RPi constants
     RPI_DIRECTION_PIN = 18
     RPI_DIRECTION_TX = GPIO.HIGH
     RPI_DIRECTION_RX = GPIO.LOW
-    RPI_DIRECTION_SWITCH_DELAY = 0.001
+    RPI_DIRECTION_SWITCH_DELAY = 0.00005
 
     # static variables
     port = None
@@ -137,7 +137,7 @@ class Ax12:
 
     def __init__(self):
         if(Ax12.port == None):
-            Ax12.port = Serial("/dev/ttyAMA0", baudrate=1000000, timeout=0.0001)
+            Ax12.port = Serial("/dev/ttyAMA0", baudrate=1000000, timeout=0.001)
         if(not Ax12.gpioSet):
             GPIO.setwarnings(False)
             GPIO.setmode(GPIO.BCM)
@@ -666,6 +666,22 @@ class Ax12:
         outData += chr(Ax12.AX_MOVING_LENGTH)
         outData += chr(Ax12.AX_READ_DATA)
         outData += chr(Ax12.AX_MOVING)
+        outData += chr(Ax12.AX_BYTE_READ)
+        outData += chr(checksum)
+        Ax12.port.write(outData)
+        sleep(Ax12.TX_DELAY_TIME)
+        return self.readData(id)
+
+    def readReturnDelayTime(self, id):
+        self.direction(Ax12.RPI_DIRECTION_TX)
+        Ax12.port.flushInput()
+        checksum = (~(id + Ax12.AX_RDT_LENGTH + Ax12.AX_READ_DATA + Ax12.AX_RETURN_DELAY_TIME + Ax12.AX_BYTE_READ))&0xff
+        outData = chr(Ax12.AX_START)
+        outData += chr(Ax12.AX_START)
+        outData += chr(id)
+        outData += chr(Ax12.AX_RDT_LENGTH)
+        outData += chr(Ax12.AX_READ_DATA)
+        outData += chr(Ax12.AX_RETURN_DELAY_TIME)
         outData += chr(Ax12.AX_BYTE_READ)
         outData += chr(checksum)
         Ax12.port.write(outData)

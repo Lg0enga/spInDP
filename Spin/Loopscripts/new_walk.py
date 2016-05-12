@@ -16,13 +16,6 @@ class Walk:
     walk = True
 
     speed = 1023
-    x = 150
-    y = 150
-    z = 60
-    z1 = 20
-    CL = 53
-    FL = 83
-    TL = 126
 
     def set_speed(self, speed):
         self.speed = speed
@@ -94,61 +87,112 @@ class Walk:
     	ax12.moveSpeed(61, 512, 512)
     	ax12.moveSpeed(62, 512, 512)
 
-    def not_straight(self):
-    	ax12.moveSpeed(10, 600, 2047)
-    	ax12.moveSpeed(11, 600, 2047)
-    	ax12.moveSpeed(12, 600, 2047)
-    	ax12.moveSpeed(20, 600, 2047)
-    	ax12.moveSpeed(21, 600, 2047)
-    	ax12.moveSpeed(22, 600, 2047)
-    	ax12.moveSpeed(30, 600, 2047)
-    	ax12.moveSpeed(31, 600, 2047)
-    	ax12.moveSpeed(32, 600, 2047)
-    	ax12.moveSpeed(40, 600, 2047)
-    	ax12.moveSpeed(41, 600, 2047)
-    	ax12.moveSpeed(42, 600, 2047)
-    	ax12.moveSpeed(50, 600, 2047)
-    	ax12.moveSpeed(51, 600, 2047)
-    	ax12.moveSpeed(52, 600, 2047)
-    	ax12.moveSpeed(60, 600, 2047)
-    	ax12.moveSpeed(61, 600, 2047)
-    	ax12.moveSpeed(62, 600, 2047)
+    def setTorque(self, enabled):
+    	ax12.setTorqueStatus(10, enabled)
+    	ax12.setTorqueStatus(11, enabled)
+    	ax12.setTorqueStatus(12, enabled)
+    	ax12.setTorqueStatus(20, enabled)
+    	ax12.setTorqueStatus(21, enabled)
+    	ax12.setTorqueStatus(22, enabled)
+    	ax12.setTorqueStatus(30, enabled)
+    	ax12.setTorqueStatus(31, enabled)
+    	ax12.setTorqueStatus(32, enabled)
+    	ax12.setTorqueStatus(40, enabled)
+    	ax12.setTorqueStatus(41, enabled)
+    	ax12.setTorqueStatus(42, enabled)
+    	ax12.setTorqueStatus(50, enabled)
+    	ax12.setTorqueStatus(51, enabled)
+    	ax12.setTorqueStatus(52, enabled)
+    	ax12.setTorqueStatus(60, enabled)
+    	ax12.setTorqueStatus(61, enabled)
+    	ax12.setTorqueStatus(62, enabled)
+
+    def setReturnDelayTime(self):
+        ax12.setReturnDelayTime(10, 100)
+    	ax12.setReturnDelayTime(11, 100)
+    	ax12.setReturnDelayTime(12, 100)
+    	ax12.setReturnDelayTime(20, 100)
+    	ax12.setReturnDelayTime(21, 100)
+    	ax12.setReturnDelayTime(22, 100)
+    	ax12.setReturnDelayTime(30, 100)
+    	ax12.setReturnDelayTime(31, 100)
+    	ax12.setReturnDelayTime(32, 100)
+    	ax12.setReturnDelayTime(40, 100)
+    	ax12.setReturnDelayTime(41, 100)
+    	ax12.setReturnDelayTime(42, 100)
+    	ax12.setReturnDelayTime(50, 100)
+    	ax12.setReturnDelayTime(51, 100)
+    	ax12.setReturnDelayTime(52, 100)
+    	ax12.setReturnDelayTime(60, 100)
+    	ax12.setReturnDelayTime(61, 100)
+    	ax12.setReturnDelayTime(62, 100)
+
+    def getReturnDelayTime(self):
+        print ax12.readReturnDelayTime(10)
+    	print ax12.readReturnDelayTime(11)
+    	print ax12.readReturnDelayTime(12)
+    	print ax12.readReturnDelayTime(20)
+    	print ax12.readReturnDelayTime(21)
+    	print ax12.readReturnDelayTime(22)
+    	print ax12.readReturnDelayTime(30)
+    	print ax12.readReturnDelayTime(31)
+    	print ax12.readReturnDelayTime(32)
+    	print ax12.readReturnDelayTime(40)
+    	print ax12.readReturnDelayTime(41)
+    	print ax12.readReturnDelayTime(42)
+    	print ax12.readReturnDelayTime(50)
+    	print ax12.readReturnDelayTime(51)
+    	print ax12.readReturnDelayTime(52)
+    	print ax12.readReturnDelayTime(60)
+    	print ax12.readReturnDelayTime(61)
+    	print ax12.readReturnDelayTime(62)
 
     def beginPosition(self):
-        # while True:
-            with open('IK_Update__11052016.csv', 'rb') as f:
-                records = csv.DictReader(f, delimiter=';')
+        with open("IK_Update__11052016.csv", 'rb', 1) as f:
+            records = csv.DictReader(f, delimiter=';')
 
-                maxValue = None
+            maxValue = None
 
-                for row in records:
+            oldPositions = {}
 
-                    newPositions = {}
-                    currentPositions = {}
-                    deltaPositions = {}
-                    finalPositions = {}
+            for row in records:
 
-                    for servo, position in row.items():
-                        currentPositions[servo] = ax12.readPosition(int(servo))
-                        newPositions[servo] = position
+                newPositions = {}
+                currentPositions = {}
+                deltaPositions = {}
+                finalPositions = {}
 
-                    for servo, position in newPositions.items():
-                        if int(currentPositions[servo]) - int(position) == 0:
-                            deltaPositions[servo] = 1
-                        else:
-                            deltaPositions[servo] = abs(int(currentPositions[servo]) - int(position))
+                for servo, position in row.items():
+                    if not bool(oldPositions):
+                        try:
+                            currentPositions[servo] = ax12.readPosition(int(servo))
+                        except Ax12.axError:
+                            print "error"
+                    else:
+                        currentPositions[servo] = oldPositions[servo]
 
-                    for servo, position in deltaPositions.items():
-                        maxValue = max(deltaPositions.values())
-                        finalPositions[servo] = newPositions[servo], int(float(deltaPositions[servo]) / float(maxValue) * self.speed)
+                    newPositions[servo] = position
 
-                    finalPositions = collections.OrderedDict(sorted(finalPositions.items()))
+                for servo, position in newPositions.items():
+                    if int(currentPositions[servo]) - int(position) == 0:
+                        deltaPositions[servo] = 1
+                    else:
+                        deltaPositions[servo] = abs(int(currentPositions[servo]) - int(position))
 
-                    for servo, position_speed in finalPositions.items():
+                for servo, position in deltaPositions.items():
+                    maxValue = max(deltaPositions.values())
+                    finalPositions[servo] = newPositions[servo], int(float(deltaPositions[servo]) / float(maxValue) * self.speed)
+
+                finalPositions = collections.OrderedDict(sorted(finalPositions.items()))
+
+                for servo, position_speed in finalPositions.items():
+                    try:
                         ax12.moveSpeed(int(servo), int(position_speed[0]), int(position_speed[1]))
+                    except Ax12.axError:
+                        print "error"
 
-                    time.sleep(maxValue / float(205) * float(0.2))
-
+                time.sleep(float(1023 / self.speed) * (maxValue / float(205) * float(0.150)))
+                oldPositions = newPositions
 
     def oldBeginPosition(self):
         with open('IK_Update__10052016_old.csv', 'rb') as f:
