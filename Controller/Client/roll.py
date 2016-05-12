@@ -5,11 +5,11 @@ from PyQt4 import QtCore, QtGui, uic
 import socket
 
 
-qtCreatorFile = "loop.ui" # Enter file here.
+qtCreatorFile = "roll.ui" # Enter file here.
 
 Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
 
-class LoopWindow(QtGui.QMainWindow, Ui_MainWindow):
+class RollWindow(QtGui.QMainWindow, Ui_MainWindow):
     def __init__(self, parent=None):
         QtGui.QMainWindow.__init__(self)
         Ui_MainWindow.__init__(self)
@@ -49,6 +49,6 @@ class LoopWindow(QtGui.QMainWindow, Ui_MainWindow):
         
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
-    window = LoopWindow()
+    window = RollWindow()
     window.show()
     sys.exit(app.exec_())
