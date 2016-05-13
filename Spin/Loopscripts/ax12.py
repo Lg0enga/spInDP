@@ -123,13 +123,13 @@ class Ax12:
     LEFT = 0
     RIGTH = 1
     RX_TIME_OUT = 10
-    TX_DELAY_TIME = 0.00005
+    TX_DELAY_TIME = 0.00004
 
     # RPi constants
     RPI_DIRECTION_PIN = 18
     RPI_DIRECTION_TX = GPIO.HIGH
     RPI_DIRECTION_RX = GPIO.LOW
-    RPI_DIRECTION_SWITCH_DELAY = 0.00005
+    RPI_DIRECTION_SWITCH_DELAY = 0.00004
 
     # static variables
     port = None

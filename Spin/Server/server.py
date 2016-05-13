@@ -4,7 +4,7 @@ import atexit
 import subprocess
 
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-host = "10.42.0.70"
+host = "172.24.1.74"
 port = 8000
 print (host)
 print (port)
@@ -22,7 +22,7 @@ while 1:
     if data == 'walk1':
 	   execfile("walk/walk1.py")       
     if data == 'walk2':
-	   execfile("walk/walk2.py")
+	   execfile("/home/pi/spInDP/Spin/Loopscripts/new_walk.py")
     if data == 'walk3':
         subprocess.call(['python walk/walk4.py'], shell=True).split()
 

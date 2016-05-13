@@ -9,9 +9,9 @@ def main():
 	#ax12.learnServos()
 #	while True:
 #		time.sleep(3)
-		ax12.moveSpeed(20, 725, 300)
+		ax12.moveSpeed(20, 512, 300)
 		time.sleep(3)
-		ax12.moveSpeed(20, 30, 300)
+		ax12.moveSpeed(20, 400, 300)
 		time.sleep(2)
         #ax12.moveSpeed(11, 210, int(2046 * speed))
         #ax12.moveSpeed(12, 69, int(2046 * speed))

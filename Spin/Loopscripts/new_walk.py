@@ -15,10 +15,10 @@ class Walk:
 
     walk = True
 
-    speed = 1023
+    speed = 1024
 
     def set_speed(self, speed):
-        self.speed = speed
+        self.speed = seld.speed * speed
 
 
     def degreesToBits(degrees):
@@ -148,7 +148,7 @@ class Walk:
     	print ax12.readReturnDelayTime(62)
 
     def beginPosition(self):
-        with open("IK_Update__11052016.csv", 'rb', 1) as f:
+        with open("IK_Update__12052016.csv", 'rb', 1) as f:
             records = csv.DictReader(f, delimiter=';')
 
             maxValue = None
@@ -191,7 +191,7 @@ class Walk:
                     except Ax12.axError:
                         print "error"
 
-                time.sleep(float(1023 / self.speed) * (maxValue / float(205) * float(0.150)))
+                time.sleep(float(1023 / self.speed) * (maxValue / float(205) * float(0.196)))
                 oldPositions = newPositions
 
     def oldBeginPosition(self):
