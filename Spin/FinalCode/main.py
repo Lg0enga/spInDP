@@ -1,6 +1,6 @@
 from classes.buffer import Buffer
 from classes.server import Server
-from classes.walk import Walk
+from classes.handler import Handler
 import time
 import threading
 import subprocess
@@ -11,7 +11,7 @@ class Main(object):
     def __init__(self):
         self._Buffer = Buffer()
         self._Server = Server(self._Buffer)
-        self._Walk = Walk()
+        self._Handler = Handler(1)
         self._Exit = False
 
         self._ServerThread = threading.Thread(target=self._Server.Start)
@@ -20,7 +20,7 @@ class Main(object):
         self._CommandHandlerThread = threading.Thread(target=self.CommandHandler)
         self._CommandHandlerThread.deamon = True
         self._CommandHandlerThread.start()
-        self._HandlerThread = threading.Thread(target=self._Walk.walk)
+        self._HandlerThread = threading.Thread(target=self._Handler.runThread)
         self._HandlerThread.deamon = True
         self._HandlerThread.start()
 
@@ -35,13 +35,11 @@ class Main(object):
                     exit()
                 else:
                     if "walk" in data:
-                        data = data.replace("walk", "")
-                        data_arr = cPickle.loads(data)
+                        self._HandlerThread.join()
 
-                        x = int(data_arr[0])
-                        y = int(data_arr[1])
-
-                        print data
+                        self._HandlerThread = threading.Thread(target=self._Handler.runThread)
+                        self._HandlerThread.deamon = True
+                        self._HandlerThread.start()
 
                         # x = int(data_arr[0])
                         # y = int(data_arr[1])
