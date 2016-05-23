@@ -1,4 +1,3 @@
-
 '''
 Based on Jesse Merritt's script:
 https://github.com/jes1510/python_dynamixels
@@ -124,7 +123,7 @@ class Ax12:
     LEFT = 0
     RIGTH = 1
     RX_TIME_OUT = 10
-    TX_DELAY_TIME = 0.00002
+    TX_DELAY_TIME = 0.00004
 
     # RPi constants
     RPI_DIRECTION_PIN = 18
@@ -171,6 +170,7 @@ class Ax12:
     def readData(self,id):
         self.direction(Ax12.RPI_DIRECTION_RX)
         reply = Ax12.port.read(5) # [0xff, 0xff, origin, length, error]
+
         try:
             assert ord(reply[0]) == 0xFF
         except:
@@ -182,7 +182,7 @@ class Ax12:
             error = ord(reply[4])
 
             if(error != 0):
-                print "Error from servo: " + Ax12.dictErrors[error] + ' (code  ' + hex(error) + ')'
+                print("Error from servo: " + Ax12.dictErrors[error] + ' (code  ' + hex(error) + ')')
                 return -error
             # just reading error bit
             elif(length == 0):
@@ -195,7 +195,7 @@ class Ax12:
                     reply = Ax12.port.read(1)
                     returnValue = ord(reply[0])
                 return returnValue
-        except Exception, detail:
+        except Exception as detail:
             raise Ax12.axError(detail)
 
     def ping(self,id):
@@ -227,7 +227,7 @@ class Ax12:
             sleep(Ax12.TX_DELAY_TIME)
             return self.readData(id)
         else:
-            print "nothing done, please send confirm = True as this fuction reset to the factory default value, i.e reset the motor ID"
+            print("nothing done, please send confirm = True as this fuction reset to the factory default value, i.e reset the motor ID")
             return
 
     def setID(self, id, newId):
@@ -249,7 +249,7 @@ class Ax12:
     def setBaudRate(self, id, baudRate):
         self.direction(Ax12.RPI_DIRECTION_TX)
         Ax12.port.flushInput()
-        br = ((2000000/long(baudRate))-1)
+        br = ((2000000/int(baudRate))-1)
         checksum = (~(id + Ax12.AX_BD_LENGTH + Ax12.AX_WRITE_DATA + Ax12.AX_BAUD_RATE + br))&0xff
         outData = chr(Ax12.AX_START)
         outData += chr(Ax12.AX_START)
@@ -672,6 +672,22 @@ class Ax12:
         sleep(Ax12.TX_DELAY_TIME)
         return self.readData(id)
 
+    def readReturnDelayTime(self, id):
+        self.direction(Ax12.RPI_DIRECTION_TX)
+        Ax12.port.flushInput()
+        checksum = (~(id + Ax12.AX_RDT_LENGTH + Ax12.AX_READ_DATA + Ax12.AX_RETURN_DELAY_TIME + Ax12.AX_BYTE_READ))&0xff
+        outData = chr(Ax12.AX_START)
+        outData += chr(Ax12.AX_START)
+        outData += chr(id)
+        outData += chr(Ax12.AX_RDT_LENGTH)
+        outData += chr(Ax12.AX_READ_DATA)
+        outData += chr(Ax12.AX_RETURN_DELAY_TIME)
+        outData += chr(Ax12.AX_BYTE_READ)
+        outData += chr(checksum)
+        Ax12.port.write(outData)
+        sleep(Ax12.TX_DELAY_TIME)
+        return self.readData(id)
+
     def readRWStatus(self, id):
         self.direction(Ax12.RPI_DIRECTION_TX)
         Ax12.port.flushInput()
@@ -689,17 +705,17 @@ class Ax12:
         return self.readData(id)
 
 
-    def learnServos(self,minValue=0, maxValue=30, verbose=True) :
+    def learnServos(self,minValue=1, maxValue=80, verbose=False) :
         servoList = []
         for i in range(minValue, maxValue + 1):
             try :
                 temp = self.ping(i)
                 servoList.append(i)
-                if verbose: print "Found servo #" + str(i)
+                if verbose: print("Found servo #" + str(i))
                 time.sleep(0.1)
 
-            except Exception, detail:
-                if verbose : print "Error pinging servo #" + str(i) + ': ' + str(detail)
+            except Exception as detail:
+                if verbose : print("Error pinging servo #" + str(i) + ': ' + str(detail))
                 pass
         return servoList
 

@@ -5,24 +5,22 @@ from threading import Thread
 from ax12 import Ax12
 ax12 = Ax12()
 
-from walk_test import Walk
+from new_walk import Walk
 walk = Walk()
 
 #print walk.findServos()
 
-#print ax12.setID(1, 10)
+#ax12.setID(1, 62)
 
-# walk.setTorque(512)
-
-#walk.readTemperature()
 #walk.oldBeginPosition()
 
-#walk.doFactoryReset()
-
-#walk.setReturnDelayTime()
+# walk.setReturnDelayTime()
 # walk.getReturnDelayTime()
 
-Thread(target = walk.walk).start()
+try:
+    walk.beginPosition()
+except ax12.timeoutError:
+    print "timeout"
 
 #walk.set_speed(0.3)
 # Thread(target = walk.beginPosition).start()
