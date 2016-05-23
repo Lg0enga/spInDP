@@ -16,7 +16,7 @@ class Walk:
     backwards = False
     crab = False
 
-    speed = 0
+    speed = 1023
 
     serial = dynamixel.SerialStream(port="/dev/USB2AX",
                                     baudrate="1000000",
