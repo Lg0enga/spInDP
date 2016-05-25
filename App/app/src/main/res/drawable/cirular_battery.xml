@@ -1,0 +1,20 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item android:id="@android:id/background">
+        <shape
+            android:innerRadiusRatio="8"
+            android:shape="ring"
+            android:useLevel="false"
+            android:thickness="4dp">
+            <solid android:color="@color/dareDevil_light"/>
+        </shape>
+    </item>
+    <item android:id="@android:id/progress">
+        <shape
+            android:innerRadiusRatio="8"
+            android:shape="ring"
+            android:useLevel="true"
+            android:thickness="4dp">
+            <solid android:color="@color/dareDevil"/>
+        </shape>
+    </item>
+</layer-list>

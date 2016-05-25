@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">Darespider</string>
+    <string name="logo">DareSpider</string>
+    <string name="batterij">Batterij: </string>
+    <string name="batterijPercentage">25%</string>
+    <string name="helling">Helling: </string>
+    <string name="hellingNummer">33</string>
+    <string name="poot">Poot</string>
+    <string name="coxa">Coxa</string>
+    <string name="coxaStroom">-</string>
+    <string name="coxaKracht">-</string>
+    <string name="coxaStand">-</string>
+    <string name="coxaKoppel">-</string>
+    <string name="coxaTemperatuur">-</string>
+    <string name="femur">Femur</string>
+    <string name="femurStroom">-</string>
+    <string name="femurKracht">-</string>
+    <string name="femurStand">-</string>
+    <string name="femurKoppel">-</string>
+    <string name="femurTemperatuur">-</string>
+    <string name="tibia">Tibia</string>
+    <string name="tibiaStroom">-</string>
+    <string name="tibiaKracht">-</string>
+    <string name="tibiaStand">-</string>
+    <string name="tibiaKoppel">-</string>
+    <string name="tibiaTemperatuur">-</string>
+    <string name="mainPage">MainPage</string>
+    <string name="video">Video</string>
+
+</resources>
