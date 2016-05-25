@@ -16,7 +16,7 @@ class Walk:
     backwards = False
     crab = False
 
-    speed = 1023
+    speed = 0
 
     serial = dynamixel.SerialStream(port="/dev/USB2AX",
                                     baudrate="1000000",
@@ -49,9 +49,13 @@ class Walk:
         y = abs(y)
         self.speed = y
 
+        if self.speed > 1023:
+            self.speed = 1023
+
     def walk(self):
         while True:
-            if self.speed > 0:
+            if self.speed > 100:
+
                 csvFile = "/home/pi/spInDP/Spin/Loopscripts/walk_forward.csv"
 
                 if self.backwards:
@@ -106,15 +110,11 @@ class Walk:
                         self.net.synchronize()
                         index += 1
 
-                        #while self.is_moving(finalPositions):
-                            #time.sleep(0.00000000001)
-
                         time.sleep(float(1023 / self.speed) * (maxValue / float(205) * float((float(self.speed + 2069)) / 25767)))
 
                         oldPositions = newPositions
 
     def is_moving(self, finalPositions):
-
         while True:
             rangeMin = int(finalPositions.items()[0][1][0]) - 15
             rangeMax = int(finalPositions.items()[0][1][0]) + 15

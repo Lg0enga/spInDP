@@ -20,7 +20,10 @@ class Handler(object):
             self._ExitSemaphore.release()
             time.sleep(0.001)
 
-    def exit(self):
+    def set_speed(self, x, y):
+        self._Walk.set_speed(x, y)
+
+    def Exit(self):
         self._ExitSemaphore.acquire()
         self._Exit = True
         self._ExitSemaphore.release()

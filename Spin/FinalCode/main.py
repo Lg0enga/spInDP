@@ -6,6 +6,7 @@ import threading
 import subprocess
 import cPickle
 import sys
+import subprocess, signal
 
 class Main(object):
     def __init__(self):
@@ -15,14 +16,14 @@ class Main(object):
         self._Exit = False
 
         self._ServerThread = threading.Thread(target=self._Server.Start)
-        self._ServerThread.deamon = True
         self._ServerThread.start()
         self._CommandHandlerThread = threading.Thread(target=self.CommandHandler)
-        self._CommandHandlerThread.deamon = True
         self._CommandHandlerThread.start()
         self._HandlerThread = threading.Thread(target=self._Handler.runThread)
-        self._HandlerThread.deamon = True
         self._HandlerThread.start()
+
+        p = subprocess.Popen(['ps', '-A'], stdout=subprocess.PIPE)
+        self.out, err = p.communicate()
 
     def CommandHandler(self):
         while not self._Exit:
@@ -35,27 +36,31 @@ class Main(object):
                     exit()
                 else:
                     if "walk" in data:
-                        self._HandlerThread.join()
 
-                        self._HandlerThread = threading.Thread(target=self._Handler.runThread)
-                        self._HandlerThread.deamon = True
-                        self._HandlerThread.start()
+                        data = data.replace("walk", "")
 
-                        # x = int(data_arr[0])
-                        # y = int(data_arr[1])
-                        #
-                        # if y < 1023 and y > -1023:
-                        #     if y > 100:
-                        #         self._Walk.set_speed(0, y)
-                        #     else:
-                        #         self._Walk.stop()
-                        # else:
-                        #     self._Walk.stop()
+                        try:
+                            data_arr = cPickle.loads(data)
+
+                            x = int(data_arr[0])
+                            y = int(data_arr[1])
+
+                            if y > 100.0 or y < -100.0:
+                                self._Handler.set_speed(0, y)
+                            else:
+                                self._Handler.set_speed(x, 0)
+                                print "rust stand"
+
+                        except cPickle.UnpicklingError:
+                            self._Handler.set_speed(10, 10)
+                            print "DATA ERROR"
 
                     print data
 
     def Exit(self):
-        sys.exit(0)
+        self._Server.Exit()
+        self._Handler.Exit()
+        print "Goodbye"
 
 
 if __name__ == '__main__':
