@@ -25,18 +25,15 @@ if args["color"] == "lokaal":
     'lowerColor' : (151,130,132),
     'upperColor' : (187,255,255)
 	}
-elif args["color"] == "blue":
-	lowerColor = (0,198,123) 
-	upperColor = (138,255,255) 
-elif args["color"] == "red":
-	lowerColor = (151,130,132)
-	upperColor = (187,255,255)
-elif args["color"] == "bluek":
-	lowerColor = (87,0,55)
-	upperColor = (131,255,255)
-elif args["color"] == "redk":
-	lowerColor = (0,187,143)
-	upperColor = (11,255,255)
+if args["color"] == "kuil":
+	blueDict = {
+    'lowerColor' : (87,0,55),
+    'upperColor' : (131,255,255)
+	}
+	redDict = {
+    'lowerColor' : (0,187,143),
+    'upperColor' : (11,255,255)
+	}
 else:
 	blueDict = {
     'lowerColor' : (42,142,135),
@@ -50,8 +47,10 @@ else:
 # and the coordinate deltas
 pts = deque(maxlen=args["buffer"]) 
 counter = 0 
-(dX, dY) = (0, 0) 
-direction = "" 
+(x, y) = (0, 0) 
+direction = ""
+focalLength = 3.6
+knownWidth = 28
 
 ## if a video path was not supplied, grab the reference
 ## to the webcam
@@ -66,9 +65,28 @@ camera = PiCamera()
 camera.resolution = (640, 480)
 camera.framerate = 32
 rawCapture = PiRGBArray(camera, size=(640,480))
+camera.awb_mode = "auto"
+camera.meter_mode = "matrix"
 
 time.sleep(0.1)
 
+def displayDistanceToCenter(color):
+	#display either the red or blue distance
+	if color == "red":
+		cv2.putText(frame, "Rood x: {}, y: {}".format(round(abs(x-centerX),2), round(abs(y-centerY),2)),
+		(10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
+	elif color == "blue":
+		cv2.putText(frame, "Blauw x: {}, y: {}".format(round(abs(x2-centerX),2), round(abs(y2-centerY),2)),
+		(10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
+	elif color == "both":
+		cv2.putText(frame, "Rood x: {}, y: {}".format(round(abs(x-centerX),2), round(abs(y-centerY),2)),
+		(10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
+		cv2.putText(frame, "Blauw x: {}, y: {}".format(round(abs(x2-centerX),2), round(abs(y2-centerY),2)),
+		(10, frame.shape[0] - 30), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
+
+def calculateDistanceToObject(knownWidth, focalLength, perWidth):
+	return ((knownWidth * focalLength) / perWidth)
+	
 for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
 	# grab the raw NumPy array representing the image
 	frame = stream.array
@@ -94,8 +112,9 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 	cnts2 = cv2.findContours(mask2.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
 	center = None
 	imageCenter = (320, 240)
+	centerX = 320
+	centerY = 240
 	
-	# only proceed if at least one contour was found
 	if len(cnts and cnts2) > 0:
 		# find the largest contour in the mask, then use
 		# it to compute the minimum enclosing circle and
@@ -121,7 +140,10 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 			cv2.circle(frame, center, 5, (0, 255, 0), -1)
 			cv2.circle(frame, center2, 5, (0, 255, 0), -1)
 			cv2.line(frame, center, imageCenter, (0, 0, 255), 2)
-			cv2.line(frame, center2, imageCenter, (255, 0, 0), 2) 
+			cv2.line(frame, center2, imageCenter, (255, 0, 0), 2)
+			
+			displayDistanceToCenter("both")
+
 
 			#pts.appendleft(center)	
 			#pts.appendleft(center2)
@@ -132,6 +154,9 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 				(0, 0, 255), 2)
 			cv2.circle(frame, center, 5, (0, 255, 0), -1)
 			cv2.line(frame, center, imageCenter, (0, 0, 255), 2)
+			
+			displayDistanceToCenter("red")
+
 
 			#pts.appendleft(center)
 		elif radius2 > 20:
@@ -140,8 +165,9 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 			cv2.circle(frame, (int(x2), int(y2)), int(radius2),
 				(255, 0, 0), 2)
 			cv2.circle(frame, center2, 5, (0, 255, 0), -1)
-			cv2.line(frame, center2, imageCenter, (255, 0, 0), 2) 
-			#pts.appendleft(center2)
+			cv2.line(frame, center2, imageCenter, (255, 0, 0), 2)
+			
+			displayDistanceToCenter("blue")
 
 	elif len(cnts) > 0:
 		# find the largest contour in the mask, then use
@@ -151,6 +177,8 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 		((x, y), radius) = cv2.minEnclosingCircle(c)
 		M = cv2.moments(c)
 		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+
+		marker = cv2.minAreaRect(c)
  
 		# only proceed if the radius meets a minimum size
 		if radius > 20:
@@ -160,9 +188,11 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 				(0, 0, 255), 2)
 			cv2.circle(frame, center, 5, (0, 255, 0), -1)
 			cv2.line(frame, center, imageCenter, (0, 0, 255), 2)
-			#pts.appendleft(center)	
-
- 
+			displayDistanceToCenter("red")			
+			calculateDistanceToObject(knownWidth, focalLength, c)					
+			objectDistance = calculateDistanceToObject(knownWidth, focalLength, marker[1][0])
+			print objectDistance
+			cv2.putText(frame, "Afstand: {} cm".format(round(objectDistance * 100),2),(10, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
 	elif len(cnts2) > 0:
 		# find the largest contour in the mask, then use
 		# it to compute the minimum enclosing circle and
@@ -179,17 +209,10 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 			cv2.circle(frame, (int(x), int(y)), int(radius),
 				(255, 0, 0), 2)
 			cv2.circle(frame, center, 5, (0, 255, 0), -1)
-			cv2.line(frame, center, imageCenter, (0, 0, 255), 2)
-			#pts.appendleft(center)	
-	
-	
-	# show the movement deltas and the direction of movement on
-	# the frame
-	# cv2.putText(frame, direction, (10, 30), cv2.FONT_HERSHEY_SIMPLEX,
-		# 0.65, (0, 0, 255), 3)
-	# cv2.putText(frame, "dx: {}, dy: {}".format(dX, dY),
-		# (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX,
-		# 0.35, (0, 0, 255), 1)
+			cv2.line(frame, center, imageCenter, (255, 0, 0), 2)
+			
+			displayDistanceToCenter("blue")
+
  
 	# show the frame to our screen and increment the frame counter
 	cv2.imshow("Frame", frame)
