@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 from __future__ import division
 import sys
-from PyQt4 import QtCore, QtGui, uic
+from PyQt4 import QtCore, QtGui, uic, QtWebKit
+import RPi.GPIO as GPIO  
 import socket
 
 
@@ -16,7 +17,16 @@ class VideoWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.setGeometry(0, 30, 491, 298)
-        self.BackButton.clicked.connect(self.BackClick)        
+        self.html = QtWebKit.QWebView()
+        self.gridLayout.addWidget(self.html)
+        self.setCentralWidget(self.centralwidget)
+        self.gridLayout.mouseReleaseEvent=self.BackClick
+        self.browse()
+
+    def browse(self):
+        url = "http://10.42.0.83/"
+        self.html.load(QtCore.QUrl(url))
+        self.html.show()      
 
     def BackClick(self):
         self.close()

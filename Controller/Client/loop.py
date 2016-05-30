@@ -27,13 +27,13 @@ class LoopWindow(QtGui.QMainWindow, Ui_MainWindow):
 
     def Loop1Click(self):
         clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        clientsocket.connect(('10.42.0.70', 8000))
+        clientsocket.connect(('10.42.0.76', 8000))
         clientsocket.send('walk1')
         clientsocket.shutdown()
 
     def Loop2Click(self):
         clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        clientsocket.connect(('10.42.0.70', 8000))
+        clientsocket.connect(('10.42.0.76', 8000))
         clientsocket.send('walk2')
         clientsocket.listen(5)
         print clientsocket.recv(1024)
@@ -41,7 +41,7 @@ class LoopWindow(QtGui.QMainWindow, Ui_MainWindow):
 
     def Loop3Click(self):
         clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        clientsocket.connect(('10.42.0.70', 8000))
+        clientsocket.connect(('10.42.0.76', 8000))
         clientsocket.send('walk3')
         clientsocket.shutdown()
 
