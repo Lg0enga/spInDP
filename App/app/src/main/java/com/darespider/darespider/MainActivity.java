@@ -1,170 +1,68 @@
 package com.darespider.darespider;
 
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Intent;
-import android.os.Handler;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.ImageButton;
-import android.widget.ProgressBar;
-import android.widget.TextView;
+
+import com.darespider.darespider.LineGraphFragment;
+import com.darespider.darespider.MainFragment;
+import com.darespider.darespider.R;
+import com.darespider.darespider.VideoFragment;
+import com.github.mikephil.charting.data.Entry;
 
 import java.util.ArrayList;
-import java.lang.Double;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.bumptech.glide.Glide;
-
 import com.darespider.darespider.api.SpiderService;
 import com.darespider.darespider.model.Spider;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.GsonConverterFactory;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class MainActivity extends AppCompatActivity {
-
-
-    private ProgressBar mBATTERIJ;
-
-    private ImageButton mLFL;
-    private ImageButton mLML;
-    private ImageButton mLRL;
-    private ImageButton mBODY;
-    private ImageButton mLFR;
-    private ImageButton mLMR;
-    private ImageButton mLRR;
-    private ImageButton mSTROOM;
-    private ImageButton mKRACHT;
-    private ImageButton mSTAND;
-    private ImageButton mKOPPEL;
-    private ImageButton mTEMPERATUUR;
-
-    private TextView mBATTERIJPERCENTAGE;
-    private TextView mHELLING;
-    private TextView mPOOT;
-    private TextView mCOXASTROOM;
-    private TextView mCOXAKRACHT;
-    private TextView mCOXASTAND;
-    private TextView mCOXAKOPPEL;
-    private TextView mCOXATEMPERATUUR;
-    private TextView mFEMURSTROOM;
-    private TextView mFEMURKRACHT;
-    private TextView mFEMURSTAND;
-    private TextView mFEMURKOPPEL;
-    private TextView mFEMURTEMPERATUUR;
-    private TextView mTIBIASTROOM;
-    private TextView mTIBIAKRACHT;
-    private TextView mTIBIASTAND;
-    private TextView mTIBIAKOPPEL;
-    private TextView mTIBIATEMPERATUUR;
-
-    private TestActivity mTestActivity;
-    public static Spider mSPIDER = new Spider();
-
-    public static int iterator = 0;
-    public static int seconds = 0;
-    public static ArrayList<Spider> spiderArrayList = new ArrayList<>();
-    public static int attribute = -1;
-    public static int selectedLeg = -1;
-    class RefreshData extends TimerTask {
-        public void run() {
-            getData();
-
-        }
-    }
+public class MainActivity extends AppCompatActivity implements MainFragment.OnMainFragmentListener, VideoFragment.OnVideoFragmentListener, LineGraphFragment.OnLineGraphFragmentListener  {
+    private int mAttribute = -1;
+    private int mSelecedLeg =-1;
+    private Spider mSpider;
+    private ArrayList<Spider> spiderList = new ArrayList<>();
+    private int mIterator = -1;
+    private int mSeconds = -1;
+    private ArrayList<Integer> mIteratorList = new ArrayList<>();
+    private ArrayList<Integer> mSecondsList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Timer timer = new Timer();
-        Timer timer2 = new Timer();
-        timer.schedule(new RefreshData(), 0, 1000);
+        getFragmentManager().beginTransaction()
+                .add(R.id.fragment_container, new MainFragment())
+                .commit();
 
-        timer2.schedule(new TimerTask() {
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                if (spiderArrayList == null)
-                    spiderArrayList = new ArrayList<>();
-                if (spiderArrayList.size() >= 10){
-                    spiderArrayList.remove(0);
+                getData();
+                if (spiderList == null)
+                    spiderList = new ArrayList<>();
+                if (mSpider != null) {
+                    spiderList.add(mSpider);
+                    mIterator++;
+                    mSeconds++;
+                    mIteratorList.add(mIterator);
+                    mSecondsList.add(mSeconds);
                 }
-                iterator++;
-                seconds+=5;
-                spiderArrayList.add(mSPIDER);
             }
-        },0, 5000);
-
-
-
-        mBATTERIJ = (ProgressBar) findViewById(R.id.batterij);
-
-        mLFL = (ImageButton) findViewById(R.id.lfl);
-        mLML = (ImageButton) findViewById(R.id.lml);
-        mLRL = (ImageButton) findViewById(R.id.lrl);
-        mBODY = (ImageButton) findViewById(R.id.body);
-        mLFR = (ImageButton) findViewById(R.id.lfr);
-        mLMR = (ImageButton) findViewById(R.id.lmr);
-        mLRR = (ImageButton) findViewById(R.id.lrr);
-        mSTROOM = (ImageButton) findViewById(R.id.stroom);
-        mKRACHT = (ImageButton) findViewById(R.id.kracht);
-        mSTAND = (ImageButton) findViewById(R.id.stand);
-        mKOPPEL = (ImageButton) findViewById(R.id.koppel);
-        mTEMPERATUUR = (ImageButton) findViewById(R.id.temperatuur);
-
-        mBATTERIJPERCENTAGE = (TextView) findViewById(R.id.batterijPercentage);
-        mHELLING = (TextView) findViewById(R.id.hellingNummer);
-        mPOOT = (TextView) findViewById(R.id.poot);
-        mCOXASTROOM = (TextView) findViewById(R.id.coxaStroom);
-        mCOXAKRACHT = (TextView) findViewById(R.id.coxaKracht);
-        mCOXASTAND = (TextView) findViewById(R.id.coxaStand);
-        mCOXAKOPPEL = (TextView) findViewById(R.id.coxaKoppel);
-        mCOXATEMPERATUUR = (TextView) findViewById(R.id.coxaTemperatuur);
-        mFEMURSTROOM = (TextView) findViewById(R.id.femurStroom);
-        mFEMURKRACHT = (TextView) findViewById(R.id.femurKracht);
-        mFEMURSTAND = (TextView) findViewById(R.id.femurStand);
-        mFEMURKOPPEL = (TextView) findViewById(R.id.femurKoppel);
-        mFEMURTEMPERATUUR = (TextView) findViewById(R.id.femurTemperatuur);
-        mTIBIASTROOM = (TextView) findViewById(R.id.tibiaStroom);
-        mTIBIAKRACHT = (TextView) findViewById(R.id.tibiaKracht);
-        mTIBIASTAND = (TextView) findViewById(R.id.tibiaStand);
-        mTIBIAKOPPEL = (TextView) findViewById(R.id.tibiaKoppel);
-        mTIBIATEMPERATUUR = (TextView) findViewById(R.id.tibiaTemperatuur);
-
-        Glide.with(this).load(R.drawable.lfl).into(mLFL);
-        Glide.with(this).load(R.drawable.lml).into(mLML);
-        Glide.with(this).load(R.drawable.lrl).into(mLRL);
-        Glide.with(this).load(R.drawable.body).into(mBODY);
-        Glide.with(this).load(R.drawable.lfr).into(mLFR);
-        Glide.with(this).load(R.drawable.lmr).into(mLMR);
-        Glide.with(this).load(R.drawable.lrr).into(mLRR);
-
-        mLFL.setOnClickListener(new ButtonHandler());
-        mLML.setOnClickListener(new ButtonHandler());
-        mLRL.setOnClickListener(new ButtonHandler());
-        mBODY.setOnClickListener(new ButtonHandler());
-        mLFR.setOnClickListener(new ButtonHandler());
-        mLMR.setOnClickListener(new ButtonHandler());
-        mLRR.setOnClickListener(new ButtonHandler());
-        mSTROOM.setOnClickListener(new ButtonHandler());
-        mKRACHT.setOnClickListener(new ButtonHandler());
-        mSTAND.setOnClickListener(new ButtonHandler());
-        mKOPPEL.setOnClickListener(new ButtonHandler());
-        mTEMPERATUUR.setOnClickListener(new ButtonHandler());
-
-        mTestActivity = new TestActivity();
+        },0, 1000);
     }
-
     private void getData() {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://10.42.0.76")
@@ -177,12 +75,7 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call<Spider> call, Response<Spider> response) {
                 Spider spider = response.body();
 
-                MainActivity.this.mSPIDER = spider;
-
-                MainActivity.this.updateText(spider);
-                MainActivity.this.mBATTERIJ.setProgress(spider.getBatteryPercentage());
-                MainActivity.this.mBATTERIJPERCENTAGE.setText(Integer.toString(spider.getBatteryPercentage()) + "%");
-                MainActivity.this.mHELLING.setText(Double.toString(spider.getSpiderAngle()) + (char) 0x00B0);
+                MainActivity.this.mSpider = spider;
             }
 
             @Override
@@ -193,112 +86,63 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public class ButtonHandler implements OnClickListener {
-
-        private LineGraph mLineGraph;
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()) {
-                case R.id.stroom:
-                    attribute = 0;
-                    mLineGraph = new LineGraph();
-                    Intent intent = new Intent(MainActivity.this, mLineGraph.getClass());
-                    startActivity(intent);
-                    break;
-                case R.id.kracht:
-                    attribute = 1;
-                    Snackbar krachtSnackbar = Snackbar.make(v, "kracht", Snackbar.LENGTH_SHORT);
-                    krachtSnackbar.show();
-                    break;
-                case R.id.stand:
-                    attribute = 2;
-                    Snackbar standSnackbar = Snackbar.make(v, "stand", Snackbar.LENGTH_SHORT);
-                    standSnackbar.show();
-                    break;
-                case R.id.koppel:
-                    attribute = 3;
-                    Snackbar koppelSnackbar = Snackbar.make(v, "koppel", Snackbar.LENGTH_SHORT);
-                    koppelSnackbar.show();
-                    break;
-                case R.id.temperatuur:
-                    attribute = 4;
-                    Snackbar temperatuurSnackbar = Snackbar.make(v, "temperatuur", Snackbar.LENGTH_SHORT);
-                    temperatuurSnackbar.show();
-                    break;
-                case R.id.lfl:
-                    selectedLeg = 0;
-                    mPOOT.setText("Linker VoorPoot");
-                    updateText(mSPIDER);
-                    break;
-                case R.id.lml:
-                    selectedLeg = 1;
-                    mPOOT.setText("Linker Middenpoot");
-                    updateText(mSPIDER);
-                    break;
-                case R.id.lrl:
-                    selectedLeg = 2;
-                    mPOOT.setText("Linker Achterpoot");
-                    updateText(mSPIDER);
-                    break;
-                case R.id.lfr:
-                    selectedLeg = 3;
-                    mPOOT.setText("Rechter Voorpoot");
-                    updateText(mSPIDER);
-                    break;
-                case R.id.lmr:
-                    selectedLeg = 4;
-                    mPOOT.setText("Rechter Middenpoot");
-                    updateText(mSPIDER);
-                    break;
-                case R.id.lrr:
-                    selectedLeg = 5;
-                    mPOOT.setText("Rechter Achterpoot");
-                    updateText(mSPIDER);
-                    break;
-            }
-        }
-    }
-
-    private void updateText(Spider spider) {
-        if(selectedLeg != -1) {
-            mCOXASTROOM.setText(Double.toString(spider.getLegs().get(selectedLeg).getServos().get(0).getVoltage()));
-            mCOXAKRACHT.setText(Double.toString(spider.getLegs().get(selectedLeg).getServos().get(0).getForce()));
-            mCOXASTAND.setText(Double.toString(spider.getLegs().get(selectedLeg).getServos().get(0).getPosition()));
-            mCOXAKOPPEL.setText(Double.toString(spider.getLegs().get(selectedLeg).getServos().get(0).getTorque()));
-            mCOXATEMPERATUUR.setText(Double.toString(spider.getLegs().get(selectedLeg).getServos().get(0).getTemperature()));
-            mFEMURSTROOM.setText(Double.toString(spider.getLegs().get(selectedLeg).getServos().get(1).getVoltage()));
-            mFEMURKRACHT.setText(Double.toString(spider.getLegs().get(selectedLeg).getServos().get(1).getForce()));
-            mFEMURSTAND.setText(Double.toString(spider.getLegs().get(selectedLeg).getServos().get(1).getPosition()));
-            mFEMURKOPPEL.setText(Double.toString(spider.getLegs().get(selectedLeg).getServos().get(1).getTorque()));
-            mFEMURTEMPERATUUR.setText(Double.toString(spider.getLegs().get(selectedLeg).getServos().get(1).getTemperature()));
-            mTIBIASTROOM.setText(Double.toString(spider.getLegs().get(selectedLeg).getServos().get(2).getVoltage()));
-            mTIBIAKRACHT.setText(Double.toString(spider.getLegs().get(selectedLeg).getServos().get(2).getForce()));
-            mTIBIASTAND.setText(Double.toString(spider.getLegs().get(selectedLeg).getServos().get(2).getPosition()));
-            mTIBIAKOPPEL.setText(Double.toString(spider.getLegs().get(selectedLeg).getServos().get(2).getTorque()));
-            mTIBIATEMPERATUUR.setText(Double.toString(spider.getLegs().get(selectedLeg).getServos().get(2).getTemperature()));
-        }
-    }
-
-
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main_activity_menu, menu);
-        return true;
+    public void onBackPressed() {
+        if(getFragmentManager().getBackStackEntryCount() != 0){
+            getFragmentManager().popBackStack();
+        }else{
+            super.onBackPressed();
+        }
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.video:
-                startActivity(new Intent(MainActivity.this, Video.class));
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
+    public void setAttribute(int attribute) {
+        mAttribute = attribute;
     }
 
-    public ArrayList<Spider> getSpiderArrayList(){
-        return spiderArrayList;
+    public int getAttribute(){
+        return mAttribute;
     }
+
+    //public void setIterator(int iterator) {mIterator = iterator;}
+
+    @Override
+    public int getIterator() {
+        return mIterator;
+    }
+
+    @Override
+    public int getSeconds() {
+        return mSeconds;
+    }
+
+    //public void setSeconds(int seconds) {mSeconds = seconds;}
+
+    @Override
+    public ArrayList<Spider> getSpiderList() {
+        return spiderList;
+    }
+
+    @Override
+    public void setSelectedLeg(int selectedLeg) {
+        mSelecedLeg = selectedLeg;
+    }
+
+    public int getSelectedLeg(){
+        return mSelecedLeg;
+    }
+
+    @Override
+    public Spider getSpider() {
+        return mSpider;
+    }
+
+    public ArrayList<Integer> getIteratorList(){
+        return mIteratorList;
+    }
+
+    public ArrayList<Integer> getSecondsList(){
+        return mSecondsList;
+    }
+
 }

@@ -1,6 +1,5 @@
 package com.darespider.darespider.model;
 
-
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -40,7 +39,7 @@ public class Servo implements Parcelable {
         return Temperature;
     }
 
-    public void setTemperature(int temperature){
+    public void setTemperature(double temperature){
         Temperature = temperature;
     }
 
@@ -48,7 +47,7 @@ public class Servo implements Parcelable {
         return Voltage;
     }
 
-    public void setVoltage(int voltage){
+    public void setVoltage(double voltage){
         Voltage = voltage;
     }
 
@@ -56,7 +55,7 @@ public class Servo implements Parcelable {
         return Force;
     }
 
-    public void setForce(int force){
+    public void setForce(double force){
         Force = force;
     }
 
@@ -64,7 +63,7 @@ public class Servo implements Parcelable {
         return Position;
     }
 
-    public void setPosition(int position){
+    public void setPosition(double position){
         Position = position;
     }
 
@@ -72,7 +71,7 @@ public class Servo implements Parcelable {
         return Torque;
     }
 
-    public void setTorque(int torque){
+    public void setTorque(double torque){
         Torque = torque;
     }
 

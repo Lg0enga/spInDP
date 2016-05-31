@@ -7,6 +7,8 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
 
+import com.darespider.darespider.model.Leg;
+
 /**
  * Created by Allard on 19-5-2016.
  */
