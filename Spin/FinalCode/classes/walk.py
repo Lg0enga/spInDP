@@ -12,25 +12,26 @@ servoList = None
 
 class Walk:
 
-    walk = True
-    backwards = False
-    crab = False
+    def __init__(self):
+        self.walk = True
+        self.backwards = False
+        self.crab = False
 
-    speed = 0
+        self.speed = 1023
 
-    serial = dynamixel.SerialStream(port="/dev/USB2AX",
-                                    baudrate="1000000",
-                                    timeout=1)
+        serial = dynamixel.SerialStream(port="/dev/USB2AX",
+                                        baudrate="1000000",
+                                        timeout=1)
 
-    net = dynamixel.DynamixelNetwork(serial)
+        self.net = dynamixel.DynamixelNetwork(serial)
 
-    servos = [32, 40, 41, 10, 11, 12, 61, 50, 51, 20, 21, 22, 62, 52, 60, 42, 30, 31]
+        servos = [32, 40, 41, 10, 11, 12, 61, 50, 51, 20, 21, 22, 62, 52, 60, 42, 30, 31]
 
-    for servoId in servos:
-        newDynamixel = dynamixel.Dynamixel(servoId, net)
-        net._dynamixel_map[servoId] = newDynamixel
+        for servoId in servos:
+            newDynamixel = dynamixel.Dynamixel(servoId, self.net)
+            self.net._dynamixel_map[servoId] = newDynamixel
 
-    def set_speed(self, x, y):
+    def SetSpeed(self, x, y):
         if y < 0:
             self.backwards = True
         else:
@@ -52,7 +53,7 @@ class Walk:
         if self.speed > 1023:
             self.speed = 1023
 
-    def walk(self):
+    def Walk(self):
         while True:
             if self.speed > 100:
 
@@ -114,7 +115,7 @@ class Walk:
 
                         oldPositions = newPositions
 
-    def is_moving(self, finalPositions):
+    def IsMoving(self, finalPositions):
         while True:
             rangeMin = int(finalPositions.items()[0][1][0]) - 15
             rangeMax = int(finalPositions.items()[0][1][0]) + 15
@@ -123,5 +124,5 @@ class Walk:
                 return False
             return True
 
-    def stop(self):
+    def Stop(self):
         self.speed = 0

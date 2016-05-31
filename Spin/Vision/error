@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "fury-road/furyroad.py", line 48, in <module>
+    x,y,w,h = cv2.boundingRect(cnt)
+TypeError: points is not a numpy array, neither a scalar
