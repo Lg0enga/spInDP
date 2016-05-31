@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "furyroad.py", line 45, in <module>
+    print cnt
+  File "/usr/lib/python2.7/dist-packages/numpy/core/numeric.py", line 1553, in array_repr
+    ', ', "array(")
+  File "/usr/lib/python2.7/dist-packages/numpy/core/arrayprint.py", line 454, in array2string
+    separator, prefix, formatter=formatter)
+  File "/usr/lib/python2.7/dist-packages/numpy/core/arrayprint.py", line 328, in _array2string
+    _summaryEdgeItems, summary_insert)[:-1]
+  File "/usr/lib/python2.7/dist-packages/numpy/core/arrayprint.py", line 523, in _formatArray
+    summary_insert)
+  File "/usr/lib/python2.7/dist-packages/numpy/core/arrayprint.py", line 529, in _formatArray
+    summary_insert).rstrip()+']\n'
+  File "/usr/lib/python2.7/dist-packages/numpy/core/arrayprint.py", line 500, in _formatArray
+    word = format_function(a[-1])
+  File "/usr/lib/python2.7/dist-packages/numpy/core/arrayprint.py", line 653, in __call__
+    if _MININT < x < _MAXINT:
+KeyboardInterrupt

@@ -75,33 +75,8 @@ time.sleep(0.1)
 # -22.38 ln(x) + 293.25
 def calculateDistance(x):	
 	return math.ceil(-22.38 * math.log1p(x) + 293.25)
-	
-def spiderDirection(x):
-	if x < 270:
-		cv2.putText(frame, "Left!",
-		(600, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
-	elif x > 370:
-		cv2.putText(frame, "Right!",
-		(600, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
-	else:
-		cv2.putText(frame, "Forward!",
-		(600, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
 
-def displayDistanceToCenter(color):
-	#display either the red or blue distance
-	if color == "red":
-		cv2.putText(frame, "Rood x: {}, y: {}".format(round(abs(x-centerX),2), round(abs(y-centerY),2)),
-		(10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
-	elif color == "blue":
-		cv2.putText(frame, "Blauw x: {}, y: {}".format(round(abs(x2-centerX),2), round(abs(y2-centerY),2)),
-		(10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
-	elif color == "both":
-		cv2.putText(frame, "Rood x: {}, y: {}".format(round(abs(x-centerX),2), round(abs(y-centerY),2)),
-		(10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
-		cv2.putText(frame, "Blauw x: {}, y: {}".format(round(abs(x2-centerX),2), round(abs(y2-centerY),2)),
-		(10, frame.shape[0] - 30), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
-	
-for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):	
 	# grab the raw NumPy array representing the image
 	frame = stream.array
 	#frame = imutils.resize(image, width=640)
@@ -136,7 +111,7 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 		c = max(cnts, key=cv2.contourArea)
 		((x, y), radius) = cv2.minEnclosingCircle(c)
 		M = cv2.moments(c)
-		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))		
 		
 		c2 = max(cnts2, key=cv2.contourArea)
 		((x2, y2), radius2) = cv2.minEnclosingCircle(c2)
@@ -156,8 +131,15 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 			cv2.line(frame, center, imageCenter, (0, 0, 255), 2)
 			cv2.line(frame, center2, imageCenter, (255, 0, 0), 2)
 			
-			displayDistanceToCenter("both")
-
+			cv2.putText(frame, "Rood x: {}, y: {}".format(round(abs(x-centerX),2), round(abs(y-centerY),2)),
+			(10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
+			cv2.putText(frame, "Blauw x: {}, y: {}".format(round(abs(x2-centerX),2), round(abs(y2-centerY),2)),
+			(10, frame.shape[0] - 30), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
+			
+			cv2.putText(frame, "Afstand: {} cm".format(calculateDistance(M["m00"])),
+			(10, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
+			cv2.putText(frame, "Afstand: {} cm".format(calculateDistance(M2["m00"])),
+			(10, 40), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
 
 			#pts.appendleft(center)	
 			#pts.appendleft(center2)
@@ -168,10 +150,12 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 				(0, 0, 255), 2)
 			cv2.circle(frame, center, 5, (0, 255, 0), -1)
 			cv2.line(frame, center, imageCenter, (0, 0, 255), 2)
+			cv2.putText(frame, "Rood x: {}, y: {}".format(round(abs(x-centerX),2), round(abs(y-centerY),2)),
+			(10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
+
+			cv2.putText(frame, "Afstand: {} cm".format(calculateDistance(M["m00"])),
+			(10, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
 			
-			displayDistanceToCenter("red")
-
-
 			#pts.appendleft(center)
 		elif radius2 > 20:
 			# draw the circle and centroid on the frame,
@@ -180,8 +164,11 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 				(255, 0, 0), 2)
 			cv2.circle(frame, center2, 5, (0, 255, 0), -1)
 			cv2.line(frame, center2, imageCenter, (255, 0, 0), 2)
-			
-			displayDistanceToCenter("blue")
+			cv2.putText(frame, "Rood x: {}, y: {}".format(round(abs(x-centerX),2), round(abs(y-centerY),2)),
+			(10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
+			#pts.appendleft(center2)
+			cv2.putText(frame, "Afstand: {} cm".format(calculateDistance(M["m00"])),
+			(10, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
 
 	elif len(cnts) > 0:
 		# find the largest contour in the mask, then use
@@ -191,9 +178,9 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 		((x, y), radius) = cv2.minEnclosingCircle(c)
 		M = cv2.moments(c)
 		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-
-		marker = cv2.minAreaRect(c)
  
+ 				
+
 		# only proceed if the radius meets a minimum size
 		if radius > 20:
 			# draw the circle and centroid on the frame,
@@ -202,11 +189,15 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 				(0, 0, 255), 2)
 			cv2.circle(frame, center, 5, (0, 255, 0), -1)
 			cv2.line(frame, center, imageCenter, (0, 0, 255), 2)
-			displayDistanceToCenter("red")			
-			calculateDistanceToObject(knownWidth, focalLength, c)					
-			objectDistance = calculateDistanceToObject(knownWidth, focalLength, marker[1][0])
-			print objectDistance
-			cv2.putText(frame, "Afstand: {} cm".format(round(objectDistance * 100),2),(10, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
+			cv2.putText(frame, "Rood x: {}, y: {}".format(round(abs(x-centerX),2), round(abs(y-centerY),2)),
+			(10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
+			#pts.appendleft(center)
+			
+			# y = -0.1x+70 
+			cv2.putText(frame, "Afstand: {} cm".format(calculateDistance(M["m00"])),
+			(10, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
+			
+ 
 	elif len(cnts2) > 0:
 		# find the largest contour in the mask, then use
 		# it to compute the minimum enclosing circle and
@@ -224,9 +215,22 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 				(255, 0, 0), 2)
 			cv2.circle(frame, center, 5, (0, 255, 0), -1)
 			cv2.line(frame, center, imageCenter, (255, 0, 0), 2)
+			cv2.putText(frame, "Rood x: {}, y: {}".format(round(abs(x-centerX),2), round(abs(y-centerY),2)),
+			(10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
+			#pts.appendleft(center)	
 			
-			displayDistanceToCenter("blue")
-
+			# y = -0.1x+70 
+			cv2.putText(frame, "Afstand: {} cm".format(calculateDistance(M["m00"])),
+			(10, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
+	
+	
+	# show the movement deltas and the direction of movement on
+	# the frame
+	# cv2.putText(frame, direction, (10, 30), cv2.FONT_HERSHEY_SIMPLEX,
+		# 0.65, (0, 0, 255), 3)
+	# cv2.putText(frame, "x: {}, y: {}".format(x, y),
+		# (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX,
+		# 0.35, (0, 0, 255), 1)
  
 	# show the frame to our screen and increment the frame counter
 	cv2.imshow("Frame", frame)
@@ -240,4 +244,5 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
  
 # cleanup the camera and close any open windows
 camera.release()
-cv2.destroyAllWindows()		
+cv2.destroyAllWindows()	
+	
