@@ -13,11 +13,11 @@ servoList = None
 class Walk:
 
     def __init__(self):
-        self.walk = True
+        self.walk = False
         self.backwards = False
         self.crab = False
 
-        self.speed = 1023
+        self.speed = 0
 
         serial = dynamixel.SerialStream(port="/dev/USB2AX",
                                         baudrate="1000000",
@@ -53,19 +53,126 @@ class Walk:
         if self.speed > 1023:
             self.speed = 1023
 
+    def Prik(self):
+
+        csvFile = "/home/pi/spInDP/Spin/Loopscripts/prik.csv"
+
+        with open('%s' % csvFile, 'rb') as f:
+            records = csv.DictReader(f, delimiter=';')
+
+            maxValue = None
+
+            oldPositions = {}
+
+            index = 0
+
+            for row in records:
+
+                newPositions = {}
+                currentPositions = {}
+                deltaPositions = {}
+                finalPositions = {}
+
+                for servo, position in list(row.items()):
+                    if not bool(oldPositions):
+                        currentPositions[servo] = self.net._dynamixel_map[int(servo)].current_position
+                    else:
+                        currentPositions[servo] = oldPositions[servo]
+
+                    newPositions[servo] = position
+
+                for servo, position in list(newPositions.items()):
+                    if int(currentPositions[servo]) - int(position) == 0:
+                        deltaPositions[servo] = 1
+                    else:
+                        deltaPositions[servo] = abs(int(currentPositions[servo]) - int(position))
+
+                for servo, position in list(deltaPositions.items()):
+                    maxValue = max(deltaPositions.values())
+                    finalPositions[servo] = newPositions[servo], int(float(deltaPositions[servo]) / float(maxValue) * self.speed)
+
+                finalPositions = collections.OrderedDict(sorted(finalPositions.items()))
+
+                for servo, position_speed in list(finalPositions.items()):
+                    actuator = self.net._dynamixel_map[int(servo)]
+                    actuator.moving_speed = int(position_speed[1])
+                    actuator.goal_position = int(position_speed[0])
+
+                self.net.synchronize()
+                index += 1
+
+                time.sleep(float(1023 / self.speed) * (maxValue / float(205) * float((float(self.speed + 2069)) / 25767)))
+
+                oldPositions = newPositions
+
+    def LegsInit(self, inAir):
+
+        if inAir:
+            csvFile = "/home/pi/spInDP/Spin/Loopscripts/LegsInAir.csv"
+        else:
+            csvFile = "/home/pi/spInDP/Spin/Loopscripts/LegsOnGround.csv"
+
+        with open('%s' % csvFile, 'rb') as f:
+            records = csv.DictReader(f, delimiter=';')
+
+            maxValue = None
+
+            oldPositions = {}
+
+            index = 0
+
+            for row in records:
+
+                newPositions = {}
+                currentPositions = {}
+                deltaPositions = {}
+                finalPositions = {}
+
+                for servo, position in list(row.items()):
+                    if not bool(oldPositions):
+                        currentPositions[servo] = self.net._dynamixel_map[int(servo)].current_position
+                    else:
+                        currentPositions[servo] = oldPositions[servo]
+
+                    newPositions[servo] = position
+
+                for servo, position in list(newPositions.items()):
+                    if int(currentPositions[servo]) - int(position) == 0:
+                        deltaPositions[servo] = 1
+                    else:
+                        deltaPositions[servo] = abs(int(currentPositions[servo]) - int(position))
+
+                for servo, position in list(deltaPositions.items()):
+                    maxValue = max(deltaPositions.values())
+                    finalPositions[servo] = newPositions[servo], int(float(deltaPositions[servo]) / float(maxValue) * self.speed)
+
+                finalPositions = collections.OrderedDict(sorted(finalPositions.items()))
+
+                for servo, position_speed in list(finalPositions.items()):
+                    actuator = self.net._dynamixel_map[int(servo)]
+                    actuator.moving_speed = int(position_speed[1])
+                    actuator.goal_position = int(position_speed[0])
+
+                self.net.synchronize()
+                index += 1
+
+                time.sleep(float(1023 / self.speed) * (maxValue / float(205) * float((float(self.speed + 2069)) / 25767)))
+
+                oldPositions = newPositions
+
     def Walk(self):
-        while True:
+        if self.walk:
             if self.speed > 100:
 
-                csvFile = "/home/pi/spInDP/Spin/Loopscripts/walk_forward.csv"
+                csvFile = "/home/pi/spInDP/Spin/Loopscripts/ForwardWalkV2.csv"
 
                 if self.backwards:
                     csvFile = "/home/pi/spInDP/Spin/Loopscripts/walk_backwards.csv"
 
                 if self.crab:
-                    csvFile = "/home/pi/spInDP/Spin/Loopscripts/crab_left.csv"
+                    csvFile = "/home/pi/spInDP/Spin/Loopscripts/SidewardsWalkV2LEFT.csv"
                     if self.backwards:
-                        csvFile = "/home/pi/spInDP/Spin/Loopscripts/crab_right.csv"
+                        csvFile = "/home/pi/spInDP/Spin/Loopscripts/SideordsWalkV2Right.csv"
 
                 with open('%s' % csvFile, 'rb') as f:
                     records = csv.DictReader(f, delimiter=';')
@@ -125,4 +232,7 @@ class Walk:
             return True
 
     def Stop(self):
-        self.speed = 0
+        self.walk = False
+
+    def Start(self):
+        self.walk = True

@@ -16,7 +16,7 @@ class Server(Thread):
 
     def Start(self):
         serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        serverSocket.bind(('10.42.0.76', 8000))
+        serverSocket.bind(('172.24.1.1', 8000))
         serverSocket.listen(1)
 
         while not self._Exit:
@@ -25,14 +25,14 @@ class Server(Thread):
             self._Clients.append(client)
             self._Identify += 1
 
-            print "Connected with " + address[0] + ":" + str(address[1]) + "\n"
+            print("Connected with " + address[0] + ":" + str(address[1]) + "\n")
 
             try:
                 t = threading.Thread(target=self.Listen, args = (client,))
                 t.deamon = True
                 t.start()
             except:
-                print "Error: Unable to start thread \n"
+                print("Error: Unable to start thread \n")
 
             time.sleep(1)
 
@@ -43,7 +43,7 @@ class Server(Thread):
                 self._Buffer.Stack(data)
                 time.sleep(0.001)
             except:
-                print "Client " + clientSocket.getClientID() + " has disconnected."
+                print("Client " + clientSocket.getClientID() + " has disconnected.")
                 break
 
     def Send(self, data, iD):
@@ -63,4 +63,4 @@ class Server(Thread):
     def Exit(self):
         self._Exit = True
         serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        serverSocket.connect(('10.42.0.76', 8000))
+        serverSocket.connect(('172.24.1.1', 8000))

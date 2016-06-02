@@ -12,7 +12,7 @@ servoList = None
 
 class Walk:
 
-    walk = True
+    walk = False
     backwards = False
     crab = False
 
@@ -49,67 +49,120 @@ class Walk:
         y = abs(y)
         self.speed = y
 
+    def Prik(self):
+
+        csvFile = "/home/pi/spInDP/Spin/Loopscripts/prik.csv"
+
+        with open('%s' % csvFile, 'rb') as f:
+            records = csv.DictReader(f, delimiter=';')
+
+            maxValue = None
+
+            oldPositions = {}
+
+            index = 0
+
+            for row in records:
+
+                newPositions = {}
+                currentPositions = {}
+                deltaPositions = {}
+                finalPositions = {}
+
+                for servo, position in list(row.items()):
+                    if not bool(oldPositions):
+                        currentPositions[servo] = self.net._dynamixel_map[int(servo)].current_position
+                    else:
+                        currentPositions[servo] = oldPositions[servo]
+
+                    newPositions[servo] = position
+
+                for servo, position in list(newPositions.items()):
+                    if int(currentPositions[servo]) - int(position) == 0:
+                        deltaPositions[servo] = 1
+                    else:
+                        deltaPositions[servo] = abs(int(currentPositions[servo]) - int(position))
+
+                for servo, position in list(deltaPositions.items()):
+                    maxValue = max(deltaPositions.values())
+                    finalPositions[servo] = newPositions[servo], int(float(deltaPositions[servo]) / float(maxValue) * self.speed)
+
+                finalPositions = collections.OrderedDict(sorted(finalPositions.items()))
+
+                for servo, position_speed in list(finalPositions.items()):
+                    actuator = self.net._dynamixel_map[int(servo)]
+                    actuator.moving_speed = int(position_speed[1])
+                    actuator.goal_position = int(position_speed[0])
+
+                self.net.synchronize()
+                index += 1
+
+                time.sleep(float(1023 / self.speed) * (maxValue / float(205) * float((float(self.speed + 2069)) / 25767)))
+
+                oldPositions = newPositions
+
     def walk(self):
         while True:
-            if self.speed > 100:
+            if self.walk:
+    	        if self.speed > 100:
 
-                csvFile = "/home/pi/spInDP/Spin/Loopscripts/IK_Update__27052016.csv"
+    	            csvFile = "/home/pi/spInDP/Spin/Loopscripts/ForwardWalkV2.csv"
 
-                if self.backwards:
-                    csvFile = "/home/pi/spInDP/Spin/Loopscripts/walk_backwards.csv"
+    	            if self.backwards:
+    	                csvFile = "/home/pi/spInDP/Spin/Loopscripts/walk_backwards.csv"
 
-                if self.crab:
-                    csvFile = "/home/pi/spInDP/Spin/Loopscripts/crab_left.csv"
-                    if self.backwards:
-                        csvFile = "/home/pi/spInDP/Spin/Loopscripts/crab_right.csv"
+    	            if self.crab:
+    	                csvFile = "/home/pi/spInDP/Spin/Loopscripts/SidewardsWalkV2LEFT.csv"
+    	                if self.backwards:
+    	                    csvFile = "/home/pi/spInDP/Spin/Loopscripts/SideordsWalkV2Right.csv"
 
-                with open('%s' % csvFile, 'rb') as f:
-                    records = csv.DictReader(f, delimiter=';')
+    	            with open('%s' % csvFile, 'rb') as f:
+    	                records = csv.DictReader(f, delimiter=';')
 
-                    maxValue = None
+    	                maxValue = None
 
-                    oldPositions = {}
+    	                oldPositions = {}
 
-                    index = 0
+    	                index = 0
 
-                    for row in records:
+    	                for row in records:
 
-                        newPositions = {}
-                        currentPositions = {}
-                        deltaPositions = {}
-                        finalPositions = {}
+    	                    newPositions = {}
+    	                    currentPositions = {}
+    	                    deltaPositions = {}
+    	                    finalPositions = {}
 
-                        for servo, position in list(row.items()):
-                            if not bool(oldPositions):
-                                currentPositions[servo] = self.net._dynamixel_map[int(servo)].current_position
-                            else:
-                                currentPositions[servo] = oldPositions[servo]
+    	                    for servo, position in list(row.items()):
+    	                        if not bool(oldPositions):
+    	                            currentPositions[servo] = self.net._dynamixel_map[int(servo)].current_position
+    	                        else:
+    	                            currentPositions[servo] = oldPositions[servo]
 
-                            newPositions[servo] = position
+    	                        newPositions[servo] = position
 
-                        for servo, position in list(newPositions.items()):
-                            if int(currentPositions[servo]) - int(position) == 0:
-                                deltaPositions[servo] = 1
-                            else:
-                                deltaPositions[servo] = abs(int(currentPositions[servo]) - int(position))
+    	                    for servo, position in list(newPositions.items()):
+    	                        if int(currentPositions[servo]) - int(position) == 0:
+    	                            deltaPositions[servo] = 1
+    	                        else:
+    	                            deltaPositions[servo] = abs(int(currentPositions[servo]) - int(position))
 
-                        for servo, position in list(deltaPositions.items()):
-                            maxValue = max(deltaPositions.values())
-                            finalPositions[servo] = newPositions[servo], int(float(deltaPositions[servo]) / float(maxValue) * self.speed)
+    	                    for servo, position in list(deltaPositions.items()):
+    	                        maxValue = max(deltaPositions.values())
+    	                        finalPositions[servo] = newPositions[servo], int(float(deltaPositions[servo]) / float(maxValue) * self.speed)
 
-                        finalPositions = collections.OrderedDict(sorted(finalPositions.items()))
+    	                    finalPositions = collections.OrderedDict(sorted(finalPositions.items()))
 
-                        for servo, position_speed in list(finalPositions.items()):
-                            actuator = self.net._dynamixel_map[int(servo)]
-                            actuator.moving_speed = int(position_speed[1])
-                            actuator.goal_position = int(position_speed[0])
+    	                    for servo, position_speed in list(finalPositions.items()):
+    	                        actuator = self.net._dynamixel_map[int(servo)]
+    	                        actuator.moving_speed = int(position_speed[1])
+    	                        actuator.goal_position = int(position_speed[0])
 
-                        self.net.synchronize()
-                        index += 1
+    	                    self.net.synchronize()
+    	                    index += 1
 
-                        time.sleep(float(1023 / self.speed) * (maxValue / float(205) * float((float(self.speed + 2069)) / 25767)))
+    	                    time.sleep(float(1023 / self.speed) * (maxValue / float(205) * float((float(self.speed + 2069)) / 25767)))
 
-                        oldPositions = newPositions
+    	                    oldPositions = newPositions
 
     def is_moving(self, finalPositions):
 
@@ -121,10 +174,8 @@ class Walk:
                 return False
             return True
 
-    def stop(self):
-        #print("stop")
+    def Stop(self):
         self.walk = False
 
-    def start(self):
-        #print("start")
+    def Start(self):
         self.walk = True
