@@ -9,6 +9,8 @@ import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.darespider.darespider.model.Servo;
+
 /**
  * Created by Allard on 19-5-2016.
  */
