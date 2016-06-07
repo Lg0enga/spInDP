@@ -34,6 +34,10 @@ class LiveStream:
 			self.cam.wait_recording(10)
 			self.cam.stop_recording()		
 			return True		
+		except socket.error, e:
+			 print "Connection terminated"
+		except KeyboardInterrupt, e:
+			print "Connection terminated by server"
 		except: 
 			print("Unexpected error:", sys.exc_info())						
 			self.socket.close()
