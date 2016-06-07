@@ -16,6 +16,7 @@ class Server(Thread):
 
     def Start(self):
         serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        serverSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         serverSocket.bind(('172.24.1.1', 8000))
         serverSocket.listen(1)
 

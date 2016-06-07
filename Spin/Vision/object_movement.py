@@ -1,13 +1,15 @@
 from livestream.stream import LiveStream
+from picamera.array import PiRGBArray
 from collections import deque 
+from picamera import PiCamera
 import numpy as np 
 import argparse 
 import imutils 
-from picamera.array import PiRGBArray
-from picamera import PiCamera
+import thread
 import time
-import cv2
 import math
+import cv2
+
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser() 
 ap.add_argument("-c", "--color", type=str, default="", help="object color") 
@@ -54,7 +56,8 @@ camera.resolution = (640, 480)
 camera.framerate = 32
 rawCapture = PiRGBArray(camera, size=(640,480))
 
-stream = LiveStream(camera.resolution, camera.framerate)
+socketStream = LiveStream(camera)
+socketStream.start()
 
 camera.awb_mode = "auto"
 camera.meter_mode = "matrix"
@@ -91,6 +94,10 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 	imageCenter = (320, 240)
 	centerX = 320
 	centerY = 240
+
+	camera.start_recording(socketStream.conn, format='h264')
+	camera.wait_recording(1)
+	camera.stop_recording()
 	
 	if len(cnts and cnts2) > 0:
 		# find the largest contour in the mask, then use
@@ -210,7 +217,7 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 			(10, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
  
 	# show the frame to our screen and increment the frame counter
-	cv2.imshow("Frame", frame)
+	# cv2.imshow("Frame", frame)
 	key = cv2.waitKey(1) & 0xFF
 	counter += 1
 	rawCapture.truncate(0)

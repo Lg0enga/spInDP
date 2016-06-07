@@ -15,12 +15,12 @@ while True:
     if (currentTime - previousTime >= ik._servoUpdatePeriod):
         previousTime = currentTime
 
-        ik.initTripod(0, 0, 0)
+        ik.initWave(512, 0, 0)
 
-        # if test == 0:
+        # if test == 20:
         #     back = True
         #
-        # if test == -100:
+        # if test == -20:
         #     back = False
         #
         # if back:
@@ -28,8 +28,10 @@ while True:
         # else:
         #     test += 1
 
-        ik.bodyFK(0, 0, 0, 50, 0, 0)
+        ik.bodyFK(0, 0, 0, 0, 0, 0)
         ik.legIK()
         ik.driveServos()
+        currentTime = millis
+        #print (previousTime - currentTime)
     else:
         time.sleep(0.01)

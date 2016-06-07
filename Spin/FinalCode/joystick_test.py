@@ -4,16 +4,10 @@
 
 import os, struct, array
 from fcntl import ioctl
+from classes.ik import IK
+from test_drive import DriveServos
 
-from threading import Thread
-
-# from ax12 import Ax12
-# ax12 = Ax12()
-#
-# from walk_test import Walk
-# walk = Walk()
-#
-# Thread(target = walk.walk).start()
+import time
 
 # Iterate over the joystick devices.
 print('Available devices:')
@@ -21,13 +15,15 @@ print('Available devices:')
 for fn in os.listdir('/dev/input'):
     if fn.startswith('js'):
         print('  /dev/input/%s' % (fn))
+ds = DriveServos()
+ik = IK()
+
+ik.initInitialPositions()
+#ik.initInitialPositionsCrab()
 
 # We'll store the states here.
 axis_states = {}
 button_states = {}
-
-yvalue = 0.0
-xvalue = 0.0
 
 # These constants were borrowed from linux/input.h
 axis_names = {
@@ -146,31 +142,84 @@ for btn in buf[:num_buttons]:
 print '%d axes found: %s' % (num_axes, ', '.join(axis_map))
 print '%d buttons found: %s' % (num_buttons, ', '.join(button_map))
 
+
+yvalue = 0
+xvalue = 0
+rvalue = 0
+
+rPressed = False
+
+drive = False
+tripod = False
+ripple = False
+translate = False
+rotate = False
+
+isNulGeweest = False
+
+previousTime = 0
+
 # Main event loop
 while True:
     evbuf = jsdev.read(8)
     if evbuf:
-        time, value, type, number = struct.unpack('IhBB', evbuf)
+        time2, value, type, number = struct.unpack('IhBB', evbuf)
 
         # if type & 0x80:
         #      print "(initial)",
-
-        time.sleep(1)
 
         if type & 0x01:
             button = button_map[number]
             if button:
                 button_states[button] = value
                 if value:
-                    #if button == "tr2":
-                        #walk.setTorque(False)
-                    print "%s pressed" % (button)
+                    if button == "start":
+                        rPressed = True
+                    if button == "x":
+                        ripple = False
+                        tripod = True
+                        rotate = False
+                        translate = False
+                        drive = False
+                        ik.clearCaseSteps()
+                    if button == "b":
+                        ripple = True
+                        tripod = False
+                        rotate = False
+                        translate = False
+                        drive = False
+                        ik.clearCaseSteps()
+                    if button == "c":
+                        ripple = False
+                        tripod = False
+                        rotate = True
+                        translate = False
+                        drive = False
+                    if button == "a":
+                        ripple = False
+                        tripod = False
+                        rotate = False
+                        translate = True
+                        drive = False
+                    if button == "select":
+                        ripple = False
+                        tripod = False
+                        rotate = False
+                        translate = False
+                        drive = True
+                    # if button == "z":
+                    #     ik._initLegStretch = 100
+                    #     ik.initInitialPositionsCrab()
+                    # if button == "y":
+                    #     ik._initLegStretch = 150
+                    #     ik.initInitialPositions()
                 else:
-                    print "%s released" % (button)
+                    if button == "start":
+                        rPressed = False
+        t0 = time.time()
 
         if type & 0x02:
             axis = axis_map[number]
-
             if axis == "y":
                 yvalue = value / 32767.0 * 1023
                 axis_states[axis] = yvalue
@@ -179,14 +228,32 @@ while True:
                 xvalue = value / 32767.0 * 1023
                 axis_states[axis] = xvalue
 
-            print yvalue, xvalue
+                if rPressed == True:
+                    rvalue = xvalue
+                    xvalue = 0
 
-            #if -yvalue > 100.0 or -yvalue < -100.0:
-                #walk.start()
-                #walk.set_speed(float(-yvalue), float(-xvalue))
-            #else:
-                #if -xvalue > 100.0 or -xvalue < -100.0:
-                    #walk.start()
-                    #walk.set_speed(0.0, float(-xvalue))
-                #else:
-                    #walk.stop()
+        if round(-xvalue) == 0 and round(-yvalue) == 0:
+            isNulGeweest = True
+
+            #time.sleep(1)
+
+    currentTime = int(round(time.time() * 1000))
+
+    if isNulGeweest:
+        if currentTime - previousTime >= ik._servoUpdatePeriod:
+            previousTime = currentTime
+
+            if tripod:
+                ik.initTripod(-yvalue, xvalue, -rvalue)
+                ik.bodyFK(0, 0, 0, 0, 0, 0)
+            elif ripple:
+                ik.initRipple(-yvalue, xvalue, -rvalue)
+                ik.bodyFK(0, 0, 0, 0, 0, 0)
+            elif drive:
+                print xvalue, -yvalue
+                ds.drive(xvalue, -yvalue)
+
+    # elif rotate:
+    #     ik.bodyFK((-yvalue) / 10, (-xvalue) / 10, (-rvalue) / 7, 0, 0, 0)
+    # elif translate:
+    #     ik.bodyFK(0, 0, 0, (-yvalue) / 3, (-xvalue) / 3, (-rvalue) / 3)

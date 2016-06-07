@@ -2,6 +2,7 @@ import threading
 import time
 from walk import Walk
 from bodyik import BodyIK
+from ik import IK
 
 class Handler(object):
 
@@ -9,32 +10,33 @@ class Handler(object):
         self._Semaphore = threading.Semaphore(1)
         self._ExitSemaphore = threading.Semaphore(1)
         self._Exit = False
+        self._previousTime = 0
+        self._y = 0
+        self._x = 0
 
         self._ModeID = mode
         if mode == 1:
-			self._Mode = Walk()
-			self._Mode.SetSpeed(0, 200)
-			self._Mode.LegsInit(True)
-			time.sleep(1)
-			self._Mode.SetSpeed(0, 200)
-			self._Mode.LegsInit(False)
-			time.sleep(2)
-			self._Mode.SetSpeed(0, 0)
+            self._Mode = IK()
+            self._Mode.initInitialPositions()
         #if mode == 2:
             #self._Mode = BodyIK()
 
     def runThread(self):
         self._ExitSemaphore.acquire()
         while not self._Exit:
-            if(self._ModeID == 1):
-                self._Mode.Walk()
 
             #self._Mode.set_speed(1023)
             self._ExitSemaphore.release()
             time.sleep(0.001)
 
     def set_speed(self, x, y):
-        self._Mode.SetSpeed(x, y)
+        currentTime = int(round(time.time() * 1000))
+
+        if currentTime - self._previousTime >= self._Mode._servoUpdatePeriod:
+            self._previousTime = currentTime
+
+            self._Mode.initTripod(y, x, 0)
+            self._Mode.bodyFK(0, 0, 0, 0, 0, 0)
 
     def prik(self):
         self._Mode.Prik()

@@ -150,10 +150,11 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 		# find the largest contour in the mask, then use
 		# it to compute the minimum enclosing circle and
 		# centroid
-		c = max(cnts, key=cv2.contourArea) #the largest contour
-		((x, y), radius) = cv2.minEnclosingCircle(c) #minimum enclosing circle
-		M = cv2.moments(c) #information about the contour
-		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"])) #the center of the contour
+		c = max(cnts, key=cv2.contourArea)								#the largest contour
+		((x, y), radius) = cv2.minEnclosingCircle(c) 					#minimum enclosing circle
+		M = cv2.moments(c)												#information about the contour
+		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"])) 	#the center of the contour
+		
 		#the same for the blue contour
 		c2 = max(cnts2, key=cv2.contourArea)
 		((x2, y2), radius2) = cv2.minEnclosingCircle(c2)
@@ -171,72 +172,84 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 			#lines between the center of the screen and the center of the objects
 			cv2.line(frame, center, imageCenter, (0, 0, 255), 2)
 			cv2.line(frame, center2, imageCenter, (255, 0, 0), 2)
-			#call to the function for distance to center calculation
+			
+			#call to the function for distance to center calculation on both balloons
 			displayDistanceToCenter("both")
+			
 			#call the the function for distance calculation from camera to object
 			objectDistance = calculateDistance(M["m00"])
-			#distance text printing on frame
 			cv2.putText(frame, "Afstand: {} cm".format(calculateDistance(M["m00"])),(10, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
+			
 			#call to the spiderwalking function
 			#x: x-coordinate of object
 			spiderDirection(x)
 
 			#pts.appendleft(center)
 			#pts.appendleft(center2)
+		
 		#if only the red contour is big enough this code block runs
 		elif radius > 20:
 			# draw the circle and centroid on the frame,
-			# then update the list of tracked points
 			cv2.circle(frame, (int(x), int(y)), int(radius),(0, 0, 255), 2)
 			cv2.circle(frame, center, 5, (0, 255, 0), -1)
 			cv2.line(frame, center, imageCenter, (0, 0, 255), 2)
-			#call to the function for distance to center calculation
+			
+			#call to the function for distance to center calculation on the red balloon
 			displayDistanceToCenter("red")
+			
 			#call the the function for distance calculation from camera to object
 			objectDistance = calculateDistance(M["m00"])
 			cv2.putText(frame, "Afstand: {} cm".format(calculateDistance(M["m00"])),(10, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
+			
 			#call to the spiderwalking function
 			#x: x-coordinate of object
 			spiderDirection(x)
 			#pts.appendleft(center)
+		
 		#if only the blue contour is big enough this code block runs
 		elif radius2 > 20:
 			# draw the circle and centroid on the frame,
-			# then update the list of tracked points
 			cv2.circle(frame, (int(x2), int(y2)), int(radius2),
 				(255, 0, 0), 2)
 			cv2.circle(frame, center2, 5, (0, 255, 0), -1)
 			cv2.line(frame, center2, imageCenter, (255, 0, 0), 2)
-			#call to the function for distance to center calculation
+			
+			#call to the function for distance to center calculation on the blue balloon
 			displayDistanceToCenter("blue")
+	
 	#if only a red contour is found this code block runs
 	elif len(cnts) > 0:
 		# find the largest contour in the mask, then use
 		# it to compute the minimum enclosing circle and
 		# centroid
-		c = max(cnts, key=cv2.contourArea)
-		((x, y), radius) = cv2.minEnclosingCircle(c)
-		M = cv2.moments(c)
-		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-		# only proceed if the radius meets a minimum size
+		c = max(cnts, key=cv2.contourArea)								#the largest contour
+		((x, y), radius) = cv2.minEnclosingCircle(c)					#minimum enclosing circle
+		M = cv2.moments(c)												#information about the contour
+		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))	#the center of the contour
+		
+		# if the red contour is big enough this code block runs
 		if radius > 20:
+			
 			# draw the circle and centroid on the frame,
-			# then update the list of tracked points
-			cv2.circle(frame, (int(x), int(y)), int(radius),
-				(0, 0, 255), 2)
+			cv2.circle(frame, (int(x), int(y)), int(radius),(0, 0, 255), 2)
 			cv2.circle(frame, center, 5, (0, 255, 0), -1)
 			cv2.line(frame, center, imageCenter, (0, 0, 255), 2)
-			displayDistanceToCenter("red")
-
-			cv2.putText(frame, "Afstand: {} cm".format(calculateDistance(M["m00"])),(10, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
-
-			if calculateDistance(M["m00"]) < 18.0:
-				if prikDelayCounter == 0:
-					prikDelayCounter = counter
-					punctureBalloon()
-				elif (prikDelayCounter+10) < counter:
-					prikDelayCounter = 0
 			
+			#call to the function for distance to center calculation on the red balloon
+			displayDistanceToCenter("red")
+			cv2.putText(frame, "Afstand: {} cm".format(calculateDistance(M["m00"])),(10, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
+			
+			#if the distance from camera to the red balloon is smaller than 18cm it performs this block
+			#this is to prevent the prik function to be called more than once in less than 10 frames
+			if calculateDistance(M["m00"]) < 18.0:
+				if prikDelayCounter == 0:				#test to see of the counter is 0
+					prikDelayCounter = counter			#set the counter to the number of the frame in which the balloon is at 18cm
+					punctureBalloon()					#run the puncture function
+				elif (prikDelayCounter+10) < counter:	#if the prikDelayCounter+10 is smaller than the current frame number
+					prikDelayCounter = 0				#reset the prikDelayCounter
+			
+			#call to the spiderwalking function
+			#x: x-coordinate of object
 			spiderDirection(x)
 	elif len(cnts2) > 0:
 		# find the largest contour in the mask, then use
@@ -255,14 +268,15 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 				(255, 0, 0), 2)
 			cv2.circle(frame, center, 5, (0, 255, 0), -1)
 			cv2.line(frame, center, imageCenter, (255, 0, 0), 2)
-
+			
+			#call to the function for distance to center calculation on the blue balloon
 			displayDistanceToCenter("blue")
 
-	# show the frame to our screen and increment the frame counter
+	#show the frame to our screen and increment the frame counter
 	cv2.imshow("Frame", frame)
 	key = cv2.waitKey(1) & 0xFF
 	counter += 1
-	rawCapture.truncate(0)
+	rawCapture.truncate(0)	#empty the frame for the next one
 
 	# if the 'q' key is pressed, stop the loop
 	if key == ord("q"):
