@@ -23,7 +23,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("-c", "--color", type=str, default="", help="object color")
 ap.add_argument("-b", "--buffer", type=int, default=8, help="max buffer size")
 args = vars(ap.parse_args())
-# define the lower and upper boundaries of the "green" ball
+# define the lower and upper boundaries of the "threshold"
 # in the HSV color space
 if args["color"] == "lokaal":
 	blueDict = {
@@ -43,7 +43,7 @@ if args["color"] == "kuil":
     'lowerColor' : (0,187,143),
     'upperColor' : (11,255,255)
 	}
-else:
+else:		#Default
 	blueDict = {
     'lowerColor' : (42,142,135),
     'upperColor' : (121,255,243)
@@ -59,53 +59,51 @@ counter = 0
 (x, y) = (0, 0)
 direction = ""
 prikDelayCounter = 0
-
-
-## if a video path was not supplied, grab the reference
-## to the webcam
-#if not args.get("video", False):
-#	camera = cv2.VideoCapture(0)
-
-## otherwise, grab a reference to the video file
-#else:
-#	camera = cv2.VideoCapture(args["video"])
-
+#initialize the pi Camera and set its settings
 camera = PiCamera()
 camera.resolution = (640, 480)
 camera.framerate = 32
-rawCapture = PiRGBArray(camera, size=(640,480))
-
 camera.awb_mode = "auto"
 camera.meter_mode = "matrix"
+#make an PiRGBArray which get filled with the frames captured
+rawCapture = PiRGBArray(camera, size=(640,480))
+#give 1 second for the pi to set itself correctly
 time.sleep(1)
-Thread(target = walk.walk).start()
+Thread(target = walk.walk).start() #thread for walking
 
 def __init__(self):
 	print "test"
-
+#Function for the puncture motion
 def punctureBalloon():
 	walk.Stop()
 	time.sleep(1)
 	walk.Prik()
-	
+#function for calculation the distance to object 
+#x: area of object in pixels
 def calculateDistance(x):
 		return math.ceil(-22.38 * math.log1p(x) + 293.25)
-
+#function for determining the spiders walking direction
+#x: X-coordinate of the vision object
 def spiderDirection(x):
 	walk.Start()
+	#if the value of x is smaller than 270 it is considered left of center
 	if x < 270:
 		walk.set_speed(200, 0)
 		cv2.putText(frame, "Left!",
 		(550, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
+	#if the value of x is greater than 370 it is considered right of center
 	elif x > 370:
 		walk.set_speed(-200, 0)
 		cv2.putText(frame, "Right!",
 		(550, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
+	#if the value of x is between the other 2 values it is considered in center
 	else:
 		walk.set_speed(0, 200)
 		cv2.putText(frame, "Forward!",
 		(550, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
 
+#function to display the distance of the objects center to the distance of the camera center
+#color: the balloon color(s) found in the frame
 def displayDistanceToCenter(color):
 	#display either the red or blue distance
 	if color == "red":
@@ -120,6 +118,7 @@ def displayDistanceToCenter(color):
 		cv2.putText(frame, "Blauw x: {}, y: {}".format(round(abs(x2-centerX),2), round(abs(y2-centerY),2)),
 		(10, frame.shape[0] - 30), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
 
+#the main loop for displaying and running vision on the camara stream
 for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
 	# grab the raw NumPy array representing the image
 	frame = stream.array
@@ -129,8 +128,6 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 	# construct a mask for the color, then perform
 	# a series of dilations and erosions to remove any small
 	# blobs left in the mask
-	#mask1 = cv2.inRange(hsv, lowerColor, upperColor)
-
 	mask1 = cv2.inRange(hsv, redDict["lowerColor"], redDict["upperColor"])
 	mask1 = cv2.erode(mask1, None, iterations=2)
 	mask1 = cv2.dilate(mask1, None, iterations=2)
@@ -148,56 +145,61 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 	centerX = 320
 	centerY = 240
 
+	#If a red contour and a blue contour are both found then the code runs this codeblock
 	if len(cnts and cnts2) > 0:
 		# find the largest contour in the mask, then use
 		# it to compute the minimum enclosing circle and
 		# centroid
-		c = max(cnts, key=cv2.contourArea)
-		((x, y), radius) = cv2.minEnclosingCircle(c)
-		M = cv2.moments(c)
-		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-
+		c = max(cnts, key=cv2.contourArea) #the largest contour
+		((x, y), radius) = cv2.minEnclosingCircle(c) #minimum enclosing circle
+		M = cv2.moments(c) #information about the contour
+		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"])) #the center of the contour
+		#the same for the blue contour
 		c2 = max(cnts2, key=cv2.contourArea)
 		((x2, y2), radius2) = cv2.minEnclosingCircle(c2)
 		M2 = cv2.moments(c2)
 		center2 = (int(M2["m10"] / M2["m00"]), int(M2["m01"] / M2["m00"]))
 
 		# only proceed if the radius meets a minimum size
+		# in this case if both the blue and red contour are big enough
 		if radius > 20 and radius2 > 20:
 			# draw the circle and centroid on the frame,
-			# then update the list of tracked points
-			cv2.circle(frame, (int(x), int(y)), int(radius),
-				(0, 0, 255), 2)
-			cv2.circle(frame, (int(x2), int(y2)), int(radius2),
-				(255, 0, 0), 2)
+			cv2.circle(frame, (int(x), int(y)), int(radius),(0, 0, 255), 2)
+			cv2.circle(frame, (int(x2), int(y2)), int(radius2),(255, 0, 0), 2)
 			cv2.circle(frame, center, 5, (0, 255, 0), -1)
 			cv2.circle(frame, center2, 5, (0, 255, 0), -1)
+			#lines between the center of the screen and the center of the objects
 			cv2.line(frame, center, imageCenter, (0, 0, 255), 2)
 			cv2.line(frame, center2, imageCenter, (255, 0, 0), 2)
-
+			#call to the function for distance to center calculation
 			displayDistanceToCenter("both")
-
+			#call the the function for distance calculation from camera to object
 			objectDistance = calculateDistance(M["m00"])
+			#distance text printing on frame
 			cv2.putText(frame, "Afstand: {} cm".format(calculateDistance(M["m00"])),(10, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
+			#call to the spiderwalking function
+			#x: x-coordinate of object
 			spiderDirection(x)
 
 			#pts.appendleft(center)
 			#pts.appendleft(center2)
+		#if only the red contour is big enough this code block runs
 		elif radius > 20:
 			# draw the circle and centroid on the frame,
 			# then update the list of tracked points
-			cv2.circle(frame, (int(x), int(y)), int(radius),
-				(0, 0, 255), 2)
+			cv2.circle(frame, (int(x), int(y)), int(radius),(0, 0, 255), 2)
 			cv2.circle(frame, center, 5, (0, 255, 0), -1)
 			cv2.line(frame, center, imageCenter, (0, 0, 255), 2)
-
+			#call to the function for distance to center calculation
 			displayDistanceToCenter("red")
-
+			#call the the function for distance calculation from camera to object
 			objectDistance = calculateDistance(M["m00"])
 			cv2.putText(frame, "Afstand: {} cm".format(calculateDistance(M["m00"])),(10, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
+			#call to the spiderwalking function
+			#x: x-coordinate of object
 			spiderDirection(x)
-
 			#pts.appendleft(center)
+		#if only the blue contour is big enough this code block runs
 		elif radius2 > 20:
 			# draw the circle and centroid on the frame,
 			# then update the list of tracked points
@@ -205,9 +207,9 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 				(255, 0, 0), 2)
 			cv2.circle(frame, center2, 5, (0, 255, 0), -1)
 			cv2.line(frame, center2, imageCenter, (255, 0, 0), 2)
-
+			#call to the function for distance to center calculation
 			displayDistanceToCenter("blue")
-
+	#if only a red contour is found this code block runs
 	elif len(cnts) > 0:
 		# find the largest contour in the mask, then use
 		# it to compute the minimum enclosing circle and
@@ -216,9 +218,6 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 		((x, y), radius) = cv2.minEnclosingCircle(c)
 		M = cv2.moments(c)
 		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-
-		marker = cv2.minAreaRect(c)
-
 		# only proceed if the radius meets a minimum size
 		if radius > 20:
 			# draw the circle and centroid on the frame,

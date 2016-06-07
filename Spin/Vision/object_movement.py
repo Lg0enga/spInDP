@@ -1,6 +1,4 @@
-# USAGE python object_movement.py --video 
-# object_tracking_example.mp4 python object_movement.py 
-# import the necessary packages yo
+from livestream.stream import LiveStream
 from collections import deque 
 import numpy as np 
 import argparse 
@@ -15,8 +13,8 @@ ap = argparse.ArgumentParser()
 ap.add_argument("-c", "--color", type=str, default="", help="object color") 
 ap.add_argument("-b", "--buffer", type=int, default=8, help="max buffer size") 
 args = vars(ap.parse_args())
-# define the lower and upper boundaries of the "green" ball 
-# in the HSV color space
+
+# define the lower and upper boundaries of the balloons depending on the area
 if args["color"] == "lokaal":
 	blueDict = {
     'lowerColor' : (42,142,135),
@@ -51,28 +49,18 @@ counter = 0
 (x, y) = (0, 0) 
 direction = "" 
 
-## if a video path was not supplied, grab the reference
-## to the webcam
-#if not args.get("video", False):
-#	camera = cv2.VideoCapture(0)
- 
-## otherwise, grab a reference to the video file
-#else:
-#	camera = cv2.VideoCapture(args["video"])
-
 camera = PiCamera()
 camera.resolution = (640, 480)
 camera.framerate = 32
 rawCapture = PiRGBArray(camera, size=(640,480))
+
+stream = LiveStream(camera.resolution, camera.framerate)
 
 camera.awb_mode = "auto"
 camera.meter_mode = "matrix"
 
 time.sleep(0.1)
 
-# y = -0.1x+70 					lineair
-# y = -20.67 nlog(x) + 270.11   logaritmisch
-# -22.38 ln(x) + 293.25
 def calculateDistance(x):	
 	return math.ceil(-22.38 * math.log1p(x) + 293.25)
 
@@ -178,8 +166,6 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 		((x, y), radius) = cv2.minEnclosingCircle(c)
 		M = cv2.moments(c)
 		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
- 
- 				
 
 		# only proceed if the radius meets a minimum size
 		if radius > 20:
@@ -222,15 +208,6 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 			# y = -0.1x+70 
 			cv2.putText(frame, "Afstand: {} cm".format(calculateDistance(M["m00"])),
 			(10, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
-	
-	
-	# show the movement deltas and the direction of movement on
-	# the frame
-	# cv2.putText(frame, direction, (10, 30), cv2.FONT_HERSHEY_SIMPLEX,
-		# 0.65, (0, 0, 255), 3)
-	# cv2.putText(frame, "x: {}, y: {}".format(x, y),
-		# (10, frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX,
-		# 0.35, (0, 0, 255), 1)
  
 	# show the frame to our screen and increment the frame counter
 	cv2.imshow("Frame", frame)
