@@ -57,7 +57,6 @@ camera.framerate = 32
 rawCapture = PiRGBArray(camera, size=(640,480))
 
 socketStream = LiveStream(camera)
-socketStream.start()
 
 camera.awb_mode = "auto"
 camera.meter_mode = "matrix"

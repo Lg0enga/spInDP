@@ -15,7 +15,7 @@ while True:
     if (currentTime - previousTime >= ik._servoUpdatePeriod):
         previousTime = currentTime
 
-        ik.initWave(512, 0, 0)
+        ik.initTripod(0, 512, 0)
 
         # if test == 20:
         #     back = True

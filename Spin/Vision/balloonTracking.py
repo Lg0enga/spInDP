@@ -18,6 +18,10 @@ sys.path.insert(0, '/home/pi/spInDP/Spin/Loopscripts')
 from walk_test import Walk
 walk = Walk()
 
+from classes.ik import IK
+ik = IK()
+ik.initInitialPositions()
+
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-c", "--color", type=str, default="", help="object color")
@@ -69,14 +73,11 @@ camera.meter_mode = "matrix"
 rawCapture = PiRGBArray(camera, size=(640,480))
 #give 1 second for the pi to set itself correctly
 time.sleep(1)
-Thread(target = walk.walk).start() #thread for walking
 
 def __init__(self):
 	print "test"
 #Function for the puncture motion
 def punctureBalloon():
-	walk.Stop()
-	time.sleep(1)
 	walk.Prik()
 #function for calculation the distance to object 
 #x: area of object in pixels
@@ -85,20 +86,22 @@ def calculateDistance(x):
 #function for determining the spiders walking direction
 #x: X-coordinate of the vision object
 def spiderDirection(x):
-	walk.Start()
 	#if the value of x is smaller than 270 it is considered left of center
 	if x < 270:
-		walk.set_speed(200, 0)
+		ik.initTripod(0,-512,0)
+		ik.bodyFK(0, 0, 0, 0, 0, 0)
 		cv2.putText(frame, "Left!",
 		(550, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
 	#if the value of x is greater than 370 it is considered right of center
 	elif x > 370:
-		walk.set_speed(-200, 0)
+		ik.initTripod(0,512,0)
+		ik.bodyFK(0, 0, 0, 0, 0, 0)
 		cv2.putText(frame, "Right!",
 		(550, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
 	#if the value of x is between the other 2 values it is considered in center
 	else:
-		walk.set_speed(0, 200)
+		ik.initTripod(512,0,0)
+		ik.bodyFK(0, 0, 0, 0, 0, 0)
 		cv2.putText(frame, "Forward!",
 		(550, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
 
@@ -273,7 +276,7 @@ for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port
 			displayDistanceToCenter("blue")
 
 	#show the frame to our screen and increment the frame counter
-	cv2.imshow("Frame", frame)
+	#cv2.imshow("Frame", frame)
 	key = cv2.waitKey(1) & 0xFF
 	counter += 1
 	rawCapture.truncate(0)	#empty the frame for the next one

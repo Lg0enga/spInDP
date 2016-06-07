@@ -8,14 +8,14 @@ class LiveStream:
 	def __init__(self, camera):
 		self.cam = camera
 
-	# Set up the socket and wait for connection
+		print "Binding socket.."
+		self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		self.socket.bind(('0.0.0.0', 9000))			
+		print "Starting to listen.."
+		self.socket.listen(0)
+	
 	def start(self):					
-		try:					
-			print "Binding socket.."
-			self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-			self.socket.bind(('0.0.0.0', 9000))			
-			print "Starting to listen.."
-			self.socket.listen(0)			
+		try:								
 			print "Waiting for connection.."			
 			self.conn = self.socket.accept()[0].makefile("wb")
 			return True

@@ -45,33 +45,56 @@ class Main(object):
                     self._Exit = True
                     self._Mode = ""
                 else:
-                    if "NormalWalk" in data:
-                        self._Mode = "NormalWalk"
-                    elif "prik" in data:
-                        self._Mode = "Prik"
+                    print data
 
-                    if self._Mode == "NormalWalk":
-                        data = data.replace("walk", "")
+                    data = data.replace("walk", "")
 
-                        try:
-                            data_arr = cPickle.loads(data)
+                    try:
+                        data_arr = cPickle.loads(data)
 
-                            x = int(data_arr[0])
-                            y = int(data_arr[1])
+                        x = int(data_arr[0])
+                        y = int(data_arr[1])
 
-                            self._x = x
-                            self._y = y
+                        self._x = x
+                        self._y = y
 
-                            currentTime = int(round(time.time() * 1000))
+                        currentTime = int(round(time.time() * 1000))
 
-                            if currentTime - self._previousTime >= self._ik._servoUpdatePeriod:
-                                self._previousTime = currentTime
+                        if currentTime - self._previousTime >= self._ik._servoUpdatePeriod:
+                            self._previousTime = currentTime
 
-                                ik.initTripod(self._y, self._x, 0)
-                                ik.bodyFK(0, 0, 0, 0, 0, 0)
+                            self._ik.initTripod(self._y, self._x, 0)
+                            self._ik.bodyFK(0, 0, 0, 0, 0, 0)
 
-                        except cPickle.UnpicklingError:
-                            print("DATA ERROR")
+                    except cPickle.UnpicklingError:
+                        print("DATA ERROR")
+                    # if "NormalWalk" in data:
+                    #     self._Mode = "NormalWalk"
+                    # elif "prik" in data:
+                    #     self._Mode = "Prik"
+                    #
+                    # if self._Mode == "NormalWalk":
+                    #     data = data.replace("walk", "")
+                    #
+                    #     try:
+                    #         data_arr = cPickle.loads(data)
+                    #
+                    #         x = int(data_arr[0])
+                    #         y = int(data_arr[1])
+                    #
+                    #         self._x = x
+                    #         self._y = y
+                    #
+                    #         currentTime = int(round(time.time() * 1000))
+                    #
+                    #         if currentTime - self._previousTime >= self._ik._servoUpdatePeriod:
+                    #             self._previousTime = currentTime
+                    #
+                    #             ik.initTripod(self._y, self._x, 0)
+                    #             ik.bodyFK(0, 0, 0, 0, 0, 0)
+                    #
+                    #     except cPickle.UnpicklingError:
+                    #         print("DATA ERROR")
 
 
     def Exit(self):
