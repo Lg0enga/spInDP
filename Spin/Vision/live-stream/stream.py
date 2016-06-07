@@ -27,18 +27,20 @@ class LiveStream:
 			print ("Failed to establish socket:", sys.exc_info())
 			return False
 			sys.exit()
-
+			
 	def streaming(self):		
 		try:
 			self.cam.start_recording(self.conn, format='h264')
 			self.cam.wait_recording(10)
 			self.cam.stop_recording()		
+
 			return True		
 		except socket.error, e:
-			 print "Connection terminated"
+			print "Connection terminated"
+			self.socket.close()
 		except KeyboardInterrupt, e:
 			print "Connection terminated by server"
+			self.socket.close()
 		except: 
 			print("Unexpected error:", sys.exc_info())						
-			self.socket.close()
-			return False
+			self.socket.close()			
