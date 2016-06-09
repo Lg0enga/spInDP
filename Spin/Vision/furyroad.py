@@ -3,11 +3,11 @@ from picamera.array import PiRGBArray
 from collections import deque 
 from picamera import PiCamera
 import numpy as np 
-import sys
+import subprocess
 import imutils 
 import time
+import sys
 import cv2 
-import subprocess
 
 # Color value of white stripe
 # 90 45 58 255 89 255
@@ -19,6 +19,7 @@ camera.framerate = 32
 rawCapture = PiRGBArray(camera, size=(640,480))
 
 # stream = LiveStream(camera)
+# stream.start()
 
 #set up parameters for furyroad
 lower = np.array([0, 0, 106])
@@ -33,6 +34,7 @@ counter = 0
 time.sleep(2)
 
 for stream in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+	print "in ze loop"
 	try: 
 		frame = stream.array
 		crop = frame[10:300,70:570]

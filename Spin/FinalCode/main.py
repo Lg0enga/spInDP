@@ -16,22 +16,34 @@ class Main(object):
         self._Server = Server(self._Buffer)
         self._Exit = False
 
-        self._ServerThread = threading.Thread(target=self._Server.Start)
-        self._ServerThread.start()
-        self._CommandHandlerThread = threading.Thread(target=self.CommandHandler)
-        self._CommandHandlerThread.start()
-
-        self._ik = IK()
-        self._ik.initInitialPositions()
-
         self._previousTime = 0
 
         self._x = 0
         self._y = 0
 
-        self._Mode = ""
+        self._rotX = 0
+        self._rotY = 0
+        self._rotZ = 0
+
+        self._TripodModeEnabled = False
+        self._RippleModeEnabled = False
+        self._BalanceModeEnabled = False
+        self._RotationModeEnabled = False
+
+        self._Walk = False
+
+        self._ik = IK()
+
+        self._ServerThread = threading.Thread(target=self._Server.Start)
+        self._ServerThread.start()
+        self._CommandHandlerThread = threading.Thread(target=self.CommandHandler)
+        self._CommandHandlerThread.start()
+        self._WalkTest = threading.Thread(target=self.WalkTest)
+        self._WalkTest.start()
 
     def CommandHandler(self):
+        self._ik.initInitialPositions()
+
         while not self._Exit:
 
             data = self._Buffer.Pop()
@@ -46,55 +58,63 @@ class Main(object):
                     self._Mode = ""
                 else:
                     print data
+                    if "RotationEnabled" in data:
+                        print "RotationEnabled"
+                        self._RotationModeEnabled = True
 
-                    data = data.replace("walk", "")
+                    if "RotationDisabled" in data:
+                        print "RotationDisabled"
+                        self._RotationModeEnabled = False
 
-                    try:
-                        data_arr = cPickle.loads(data)
+                    if "TripodWalk" in data:
+                        print "TripodWalk"
+                        self._TripodModeEnabled = True
+                        self._RippleModeEnabled = False
+                        self._Walk = False
 
-                        x = int(data_arr[0])
-                        y = int(data_arr[1])
+                    if "RippleWalk" in data:
+                        print "RippleWalk"
+                        self._RippleModeEnabled = True
+                        self._TripodModeEnabled = False
+                        self._Walk = False
 
-                        self._x = x
-                        self._y = y
+                    if "data" in data:
+                        data = data.replace("data", "")
 
-                        currentTime = int(round(time.time() * 1000))
+                        try:
+                            data_arr = cPickle.loads(data)
 
-                        if currentTime - self._previousTime >= self._ik._servoUpdatePeriod:
-                            self._previousTime = currentTime
+                            x = int(data_arr[0])
+                            y = int(data_arr[1])
 
-                            self._ik.initTripod(self._y, self._x, 0)
-                            self._ik.bodyFK(0, 0, 0, 0, 0, 0)
+                            self._x = x
+                            self._y = y
 
-                    except cPickle.UnpicklingError:
-                        print("DATA ERROR")
-                    # if "NormalWalk" in data:
-                    #     self._Mode = "NormalWalk"
-                    # elif "prik" in data:
-                    #     self._Mode = "Prik"
-                    #
-                    # if self._Mode == "NormalWalk":
-                    #     data = data.replace("walk", "")
-                    #
-                    #     try:
-                    #         data_arr = cPickle.loads(data)
-                    #
-                    #         x = int(data_arr[0])
-                    #         y = int(data_arr[1])
-                    #
-                    #         self._x = x
-                    #         self._y = y
-                    #
-                    #         currentTime = int(round(time.time() * 1000))
-                    #
-                    #         if currentTime - self._previousTime >= self._ik._servoUpdatePeriod:
-                    #             self._previousTime = currentTime
-                    #
-                    #             ik.initTripod(self._y, self._x, 0)
-                    #             ik.bodyFK(0, 0, 0, 0, 0, 0)
-                    #
-                    #     except cPickle.UnpicklingError:
-                    #         print("DATA ERROR")
+                        except cPickle.UnpicklingError:
+                            print("DATA ERROR")
+
+    def WalkTest(self):
+        while self._Walk:
+            currentTime = int(round(time.time() * 1000))
+
+            if currentTime - self._previousTime >= self._ik._servoUpdatePeriod:
+                self._previousTime = currentTime
+
+                if self._TripodModeEnabled:
+                    if self._RotationModeEnabled:
+                        self._ik.initTripod(self._y, 0, self._x)
+                    else:
+                        self._ik.initTripod(self._y, self._x, 0)
+                elif self._RippleModeEnabled:
+                    if self._RotationModeEnabled:
+                        self._ik.initRipple(self._y, 0, self._x)
+                    else:
+                        self._ik.initRipple(self._y, self._x, 0)
+
+                if self._BalanceModeEnabled:
+                    self._ik.bodyFK(self._rotX, self._rotY, self._rotZ, 0, 0, 0)
+                else:
+                    self._ik.bodyFK(0, 0, 0, 0, 0, 0)
 
 
     def Exit(self):

@@ -20,6 +20,8 @@ class Server(Thread):
         serverSocket.bind(('172.24.1.1', 8000))
         serverSocket.listen(1)
 
+        print "Connected"
+
         while not self._Exit:
             clientSocket, address = serverSocket.accept()
             client = Client(clientSocket, self._Identify)

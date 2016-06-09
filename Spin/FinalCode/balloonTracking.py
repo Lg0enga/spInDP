@@ -11,7 +11,7 @@ import time
 import cv2
 import math
 import sys
-from threading import Thread
+import threading
 
 sys.path.insert(0, '/home/pi/spInDP/Spin/Loopscripts')
 
@@ -47,20 +47,19 @@ class Vision(object):
 	    'lowerColor' : (0,187,143),
 	    'upperColor' : (11,255,255)
 		}
-	else:		#Default
+	else:		#Default ZIJN OMGEDRAAID !!!! ROOD IS 129,70,55 255,255,255 BLAUW IS 42.142.135 121.255.243
 		blueDict = {
-	    'lowerColor' : (42,142,135),
+		'lowerColor' : (42,142,135),
 	    'upperColor' : (121,255,243)
 		}
 		redDict = {
-	    'lowerColor' : (151,130,132),
-	    'upperColor' : (187,255,255)
+	    'lowerColor' : (129,70,55),
+	    'upperColor' : (255,255,255)
 		}
 	# initialize the list of tracked points, the frame counter,
 	# and the coordinate deltas
 	pts = deque(maxlen=args["buffer"])
 	counter = 0
-
 	direction = ""
 	prikDelayCounter = 0
 	#initialize the pi Camera and set its settings
@@ -75,43 +74,93 @@ class Vision(object):
 	time.sleep(1)
 
 	def __init__(self):
-		self.previousTime = 0
+		self._previousTime = 0
+		self._x = 0
+    		self._y = 0
+		self._r = 0
+		self._Walk = False
+		self._WalkTest = threading.Thread(target=self.WalkTest)
+		self._WalkTest.start()
+
 		self._ik = IK()
 		self._ik.initInitialPositions()
-		print "test"
+
+		self._lastKnownX = 0
+
+		self._redLocated = False
+
+	#walk function
+	def WalkTest(self):
+		while True:
+			while self._Walk:
+				currentTime = int(round(time.time() * 1000))
+
+				if currentTime - self._previousTime >= self._ik._servoUpdatePeriod:
+					self._previousTime = currentTime
+					self._ik.initTripod(self._x, self._y, self._r)
+					self._ik.bodyFK(0, 0, 0, 0, 0, 0)
+
 	#Function for the puncture motion
-	def punctureBalloon():
+	def punctureBalloon(self):
+		self._x = 0
+		self._y = 0
+		self._Walk = False
+
 		walk.Prik()
 	#function for calculation the distance to object
 	#x: area of object in pixels
 	def calculateDistance(self, x):
-			return math.ceil(-22.38 * math.log1p(x) + 293.25)
+		return math.ceil(-22.38 * math.log1p(x) + 293.25)
+
 	#function for determining the spiders walking direction
 	#x: X-coordinate of the vision object
 	def spiderDirection(self, x):
-		print "test"
-		while True:
-			currentTime = int(round(time.time() * 1000))
-			if currentTime - self.previousTime >= self._ik._servoUpdatePeriod:
-				self.previousTime = currentTime
-				#if the value of x is smaller than 270 it is considered left of center
-				if x < 270:
-					self._ik.initTripod(0,-512,0)
-					self._ik.bodyFK(0, 0, 0, 0, 0, 0)
-					cv2.putText(self.frame, "Left!",
-					(550, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
-				#if the value of x is greater than 370 it is considered right of center
-				elif x > 370:
-					self._ik.initTripod(0,512,0)
-					self._ik.bodyFK(0, 0, 0, 0, 0, 0)
-					cv2.putText(self.frame, "Right!",
-					(550, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
-				#if the value of x is between the other 2 values it is considered in center
-				else:
-					self._ik.initTripod(512,0,0)
-					self._ik.bodyFK(0, 0, 0, 0, 0, 0)
-					cv2.putText(self.frame, "Forward!",
-					(550, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
+		print "Spider Direction"
+		#if the value of x is smaller than 270 it is considered left of center
+		if x < 260:
+			self._lastKnownX = x
+			self._x = 0
+			self._y = -300
+			self._r = 0
+			self._Walk = True
+			cv2.putText(self.frame, "Left!",
+			(550, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
+		#if the value of x is greater than 370 it is considered right of center
+		elif x > 380:
+			self._lastKnownX = x
+			self._x = 0
+			self._y = 300
+			self._r = 0
+			self._Walk = True
+			cv2.putText(self.frame, "Right!",
+			(550, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
+		#if the value of x is between the other 2 values it is considered in center
+		else:
+			self._lastKnownX = x
+			self._x = 800
+			self._y = 0
+			self._r = 0
+			self._Walk = True
+			cv2.putText(self.frame, "Forward!",
+			(550, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
+
+	def spiderRotation(self, x):
+		print("Spider Rotation")
+		if self._redLocated == False:
+			#if the value of x is smaller than 320 it is considered left of center
+			if x < 320:
+				self._x = 0
+				self._y = 0
+				self._r = -300
+				self._Walk = True
+				print("rotate left")
+			#if the value of x is greater than 320 it is considered right of center
+			if x > 320:
+				self._x = 0
+				self._y = 0
+				self._r = 300
+				self._Walk = True
+				print("rotate right")
 	#function to display the distance of the objects center to the distance of the camera center
 	#color: the balloon color(s) found in the frame
 	def displayDistanceToCenter(self, color):
@@ -126,12 +175,13 @@ class Vision(object):
 		elif color == "both":
 			cv2.putText(self.frame, "Rood x: {}, y: {}".format(round(abs(x-self.centerX),2), round(abs(y-self.centerY),2)),
 			(10, self.frame.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
-			cv2.putText(self.frame, "Blauw x: {}, y: {}".format(round(abs(x2-self.centerX),2), round(abs(y2-self.centerY),2)),
+			cv2.putText(self.frame, "Blauw x: {}, y: {}".format(round(abs(self.x2-self.centerX),2), round(abs(self.y2-self.centerY),2)),
 			(10, self.frame.shape[0] - 30), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
 
 	def displayScreen(self):
 		#the main loop for displaying and running vision on the camara stream
 		for stream in self.camera.capture_continuous(self.rawCapture, format="bgr", use_video_port=True):
+			print(self._lastKnownX)
 			# grab the raw NumPy array representing the image
 			self.frame = stream.array
 			#frame = imutils.resize(image, width=640)
@@ -159,6 +209,7 @@ class Vision(object):
 
 			#If a red contour and a blue contour are both found then the code runs this codeblock
 			if len(cnts and cnts2) > 0:
+				print("red and blue")
 				# find the largest contour in the mask, then use
 				# it to compute the minimum enclosing circle and
 				# centroid
@@ -180,6 +231,8 @@ class Vision(object):
 				# only proceed if the radius meets a minimum size
 				# in this case if both the blue and red contour are big enough
 				if radius > 20 and radius2 > 20:
+					self._redLocated = True
+
 					# draw the circle and centroid on the frame,
 					cv2.circle(self.frame, (int(x), int(y)), int(radius),(0, 0, 255), 2)
 					cv2.circle(self.frame, (int(x2), int(y2)), int(radius2),(255, 0, 0), 2)
@@ -198,13 +251,15 @@ class Vision(object):
 
 					#call to the spiderwalking function
 					#x: x-coordinate of object
-					spiderDirection(x)
+					self.spiderDirection(x)
 
 					#pts.appendleft(center)
 					#pts.appendleft(center2)
+					self._lastKnownX = x
 
 				#if only the red contour is big enough this code block runs
 				elif radius > 20:
+					self._redLocated = True
 					# draw the circle and centroid on the frame,
 					cv2.circle(self.frame, (int(x), int(y)), int(radius),(0, 0, 255), 2)
 					cv2.circle(self.frame, center, 5, (0, 255, 0), -1)
@@ -221,20 +276,28 @@ class Vision(object):
 					#x: x-coordinate of object
 					self.spiderDirection(x)
 					#pts.appendleft(center)
+					self._lastKnownX = x
 
 				#if only the blue contour is big enough this code block runs
 				elif radius2 > 20:
+					self._redLocated = False
 					# draw the circle and centroid on the frame,
 					cv2.circle(self.frame, (int(x2), int(y2)), int(radius2),
 						(255, 0, 0), 2)
 					cv2.circle(self.frame, center2, 5, (0, 255, 0), -1)
 					cv2.line(self.frame, center2, imageCenter, (255, 0, 0), 2)
 
-					#call to the function for distance to center calculation on the blue balloon
+					#call t the function for distance to center calculation on the blue balloon
 					self.displayDistanceToCenter("blue")
 
+					self._redLocated = False
+					self.spiderRotation(self._lastKnownX)
+				else:
+					self._redLocated = False
+					#self.spiderRotation(self._lastKnownX)
 			#if only a red contour is found this code block runs
 			elif len(cnts) > 0:
+				print("red contour")
 				# find the largest contour in the mask, then use
 				# it to compute the minimum enclosing circle and
 				# centroid
@@ -245,7 +308,7 @@ class Vision(object):
 
 				# if the red contour is big enough this code block runs
 				if radius > 20:
-
+					self._redLocated = True
 					# draw the circle and centroid on the frame,
 					cv2.circle(self.frame, (int(x), int(y)), int(radius),(0, 0, 255), 2)
 					cv2.circle(self.frame, center, 5, (0, 255, 0), -1)
@@ -257,17 +320,24 @@ class Vision(object):
 
 					#if the distance from camera to the red balloon is smaller than 18cm it performs this block
 					#this is to prevent the prik function to be called more than once in less than 10 frames
-					if self.calculateDistance(M["m00"]) < 18.0:
-						if prikDelayCounter == 0:				#test to see of the counter is 0
-							prikDelayCounter = self.counter			#set the counter to the number of the frame in which the balloon is at 18cm
-							punctureBalloon()					#run the puncture function
-						elif (prikDelayCounter+10) < self.counter:	#if the prikDelayCounter+10 is smaller than the current frame number
-							prikDelayCounter = 0				#reset the prikDelayCounter
+					if self.calculateDistance(M["m00"]) < 26.0:
+						if self.prikDelayCounter == 0:							
+							self.prikDelayCounter = self.counter			
+							self.punctureBalloon()												
+						elif (self.prikDelayCounter+10) < self.counter:		
+							self.prikDelayCounter = 0						
 
 					#call to the spiderwalking function
 					#x: x-coordinate of object
 					self.spiderDirection(x)
+					self._lastKnownX = x
+				else:
+					self._redLocated = False
+					#self.spiderRotation(self._lastKnownX)
+			#if only a blue contour is found
 			elif len(cnts2) > 0:
+				self._redLocated = False
+				print("blue contour")
 				# find the largest contour in the mask, then use
 				# it to compute the minimum enclosing circle and
 				# centroid
@@ -278,6 +348,7 @@ class Vision(object):
 
 				# only proceed if the radius meets a minimum size
 				if radius > 20:
+					self._redLocated = False
 					# draw the circle and centroid on the frame,
 					# then update the list of tracked points
 					cv2.circle(self.frame, (int(x), int(y)), int(radius),
@@ -287,9 +358,11 @@ class Vision(object):
 
 					#call to the function for distance to center calculation on the blue balloon
 					self.displayDistanceToCenter("blue")
+				self._redLocated = False
+				#self.spiderRotation(self._lastKnownX)
 
 			#show the frame to our screen and increment the frame counter
-			#cv2.imshow("Frame", frame)
+			# cv2.imshow("Frame", self.frame)
 			key = cv2.waitKey(1) & 0xFF
 			self.counter += 1
 			self.rawCapture.truncate(0)	#empty the frame for the next one

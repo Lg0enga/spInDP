@@ -40,11 +40,11 @@ while True:
         # ADC op de gespecificeerde input lezen.
 		bits[i] = adc.read_adc(i, gain=GAIN[i])
 		# Omrekening voor kanaal 1 t/m 3.
-		if i >= 1:
-			values[i] = (bits[i]*(spanning[i]/2048))/deling[i]
+		if i == 0:
+			values[i] = ((bits[i]*(spanning[i]/2048))-0.525)/0.189
 		# Omrekening voor kanaal 0.
 		else: 
-			values[i] = ((bits[i]*(spanning[i]/2048))-0.525)/0.189
+			values[i] = (bits[i]*(spanning[i]/2048))/deling[i]
 		
     # Print the ADC waarden.
 	print('| {0:>6} | {1:>6} | {2:>6} | {3:>6} |'.format(*values))

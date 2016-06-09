@@ -13,7 +13,7 @@ class LiveStream:
 		self.socket.bind(('0.0.0.0', 9000))			
 		print "Starting to listen.."
 		self.socket.listen(0)
-	
+
 	def start(self):					
 		try:								
 			print "Waiting for connection.."			

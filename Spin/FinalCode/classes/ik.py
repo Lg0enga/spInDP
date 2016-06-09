@@ -165,12 +165,12 @@ class IK(object):
         rotSpeedOffsetY = []
 
         if (abs(xSpeed) > 100) or (abs(ySpeed) > 100) or (abs(rSpeed) > 100):
-            duration = 250 #duration of pull back step cycle (ms)
+            duration = 300 #duration of pull back step cycle (ms)
             numTicks = int(round(duration / self._servoUpdatePeriod)) #number of ticks in pull back step cycle
 
             speedX = 300 * xSpeed / 1023 #300mm/s step
             speedY = 300 * ySpeed / 1023 #300mm/s step
-            speedR = 30 * rSpeed / 2000 #30 degrees/s top rotation speed
+            speedR = 30 * rSpeed / 3000 #30 degrees/s top rotation speed
 
             amplitudeX = (speedX * duration / 1000.0) / 2.0
             amplitudeY = (speedY * duration / 1000.0) / 2.0
