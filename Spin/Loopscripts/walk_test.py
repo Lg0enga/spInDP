@@ -106,6 +106,58 @@ class Walk:
 
                 oldPositions = newPositions
 
+    def Drive(self):
+
+        csvFile = "/home/pi/spInDP/Spin/Loopscripts/drive.csv"
+
+        with open('%s' % csvFile, 'rb') as f:
+            records = csv.DictReader(f, delimiter=';')
+
+            maxValue = None
+
+            oldPositions = {}
+
+            index = 0
+
+            for row in records:
+
+                newPositions = {}
+                currentPositions = {}
+                deltaPositions = {}
+                finalPositions = {}
+
+                for servo, position in list(row.items()):
+                    if not bool(oldPositions):
+                        currentPositions[servo] = self.net._dynamixel_map[int(servo)].current_position
+                    else:
+                        currentPositions[servo] = oldPositions[servo]
+
+                    newPositions[servo] = position
+
+                for servo, position in list(newPositions.items()):
+                    if int(currentPositions[servo]) - int(position) == 0:
+                        deltaPositions[servo] = 1
+                    else:
+                        deltaPositions[servo] = abs(int(currentPositions[servo]) - int(position))
+
+                for servo, position in list(deltaPositions.items()):
+                    maxValue = max(deltaPositions.values())
+                    finalPositions[servo] = newPositions[servo], int(float(deltaPositions[servo]) / float(maxValue) * self.speed)
+
+                finalPositions = collections.OrderedDict(sorted(finalPositions.items()))
+
+                for servo, position_speed in list(finalPositions.items()):
+                    actuator = self.net._dynamixel_map[int(servo)]
+                    actuator.moving_speed = int(position_speed[1])
+                    actuator.goal_position = int(position_speed[0])
+
+                self.net.synchronize()
+                index += 1
+
+                time.sleep(float(1023 / self.speed) * (maxValue / float(205) * float((float(self.speed + 2069)) / 25767)))
+
+                oldPositions = newPositions
+
     def walk(self):
         while True:
             if self.walk:

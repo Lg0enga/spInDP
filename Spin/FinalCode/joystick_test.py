@@ -240,7 +240,7 @@ while True:
     currentTime = int(round(time.time() * 1000))
 
     if isNulGeweest:
-        if currentTime - previousTime >= ik._servoUpdatePeriod:
+        if currentTime - previousTime >= 13:
             previousTime = currentTime
 
             if tripod:

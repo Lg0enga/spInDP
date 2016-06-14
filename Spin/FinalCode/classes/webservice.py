@@ -12,8 +12,6 @@ net = dynamixel.DynamixelNetwork(serial)
 
 servos = [32, 40, 41, 10, 11, 12, 61, 50, 51, 20, 21, 22, 62, 52, 60, 42, 30, 31]
 
-staHoogte = 0
-
 for servoId in servos:
     newDynamixel = dynamixel.Dynamixel(servoId, net)
     net._dynamixel_map[servoId] = newDynamixel
@@ -180,5 +178,8 @@ def index():
 
     return json.dumps(data)
 
+def main():
+    app.run(debug=False, host='0.0.0.0')
+
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    main()

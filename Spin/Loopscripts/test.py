@@ -22,7 +22,7 @@ walk = Walk()
 #walk.setReturnDelayTime()
 # walk.getReturnDelayTime()
 
-walk.Prik()
+walk.Drive()
 #time.sleep(5)
 #Thread(target = walk.driveToWalk).start()
 

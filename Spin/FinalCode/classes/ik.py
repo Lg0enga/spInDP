@@ -20,9 +20,11 @@ class IK(object):
             newDynamixel = dynamixel.Dynamixel(servoId, self.net)
             self.net._dynamixel_map[servoId] = newDynamixel
 
-        self._rideHeight = 100
+        self._rideHeight = 120
         self._initLegStretch = 150  #CoxaFootDist
-        self._servoUpdatePeriod = 13
+        self._servoUpdatePeriod = 20
+        self._speedStartLimit = 100
+        self._duration = 350
 
         self._X_COXA        =   122 #MM between front and back legs /2
         self._Y_COXA_FB     =   61  #MM between front/back legs /2
@@ -39,6 +41,7 @@ class IK(object):
 
     #Initialize default foot positions
     def initInitialPositions(self):
+        self.legs = []
         leg_right_front = Leg(0)
         leg_right_front.setInitialFootPosX(round(math.sin(math.radians(self._COXA_ANGLE))*self._initLegStretch))
         leg_right_front.setInitialFootPosY(round(math.cos(math.radians(self._COXA_ANGLE))*self._initLegStretch))
@@ -93,8 +96,23 @@ class IK(object):
         leg_left_front.setLegBasePosZ(0)
         self.legs.append(leg_left_front)
 
+    def initInitialPositionsRace(self):
+        self._stepHeight = 20
+        self._speedStartLimit = 100
+        self._initLegStretch = 150
+        self._rotationDegree = 30
+        self._rideHeight = 120
+        self._duration = 200
+
+        self.initInitialPositions()
+
     #Initialize crab foot positions
     def initInitialPositionsCrab(self):
+        self._stepHeight = 10
+        self._speedStartLimit = 60
+        self._initLegStretch = 120
+        self._rotationDegree = 5
+        self.legs = []
         leg_right_front = Leg(0)
         leg_right_front.setInitialFootPosX(0)
         leg_right_front.setInitialFootPosY(self._initLegStretch)
@@ -161,26 +179,27 @@ class IK(object):
         self.caseStep.append(2)
         self.caseStep.append(1)
         self.caseStep.append(2)
+
         rotSpeedOffsetX = []
         rotSpeedOffsetY = []
 
-        if (abs(xSpeed) > 100) or (abs(ySpeed) > 100) or (abs(rSpeed) > 100):
-            duration = 300 #duration of pull back step cycle (ms)
+        if (abs(xSpeed) > self._speedStartLimit) or (abs(ySpeed) > self._speedStartLimit) or (abs(rSpeed) > self._speedStartLimit):
+            duration = duration #duration of pull back step cycle (ms)
             numTicks = int(round(duration / self._servoUpdatePeriod)) #number of ticks in pull back step cycle
 
-            speedX = 300 * xSpeed / 1023 #300mm/s step
-            speedY = 300 * ySpeed / 1023 #300mm/s step
-            speedR = 30 * rSpeed / 3000 #30 degrees/s top rotation speed
+            speedX = 700 * xSpeed / 1023 #300mm/s step
+            speedY = 700 * ySpeed / 1023 #300mm/s step
+            speedR = self._rotationDegree * rSpeed / 1023 #30 degrees/s top rotation speed
 
             amplitudeX = (speedX * duration / 1000.0) / 2.0
             amplitudeY = (speedY * duration / 1000.0) / 2.0
 
             if abs(rSpeed) > abs(xSpeed) and abs(rSpeed) > abs(ySpeed):
-                amplitudeZ = -abs(50 * rSpeed / 1023)
+                amplitudeZ = -7 -abs(self._stepHeight * rSpeed / 1023)
             elif abs(xSpeed) > abs(ySpeed):
-                amplitudeZ = -abs(50 * xSpeed / 1023)
+                amplitudeZ = -7 -abs(self._stepHeight * xSpeed / 1023)
             else:
-                amplitudeZ = -abs(50 * ySpeed / 1023)
+                amplitudeZ = -7 -abs(self._stepHeight * ySpeed / 512)
 
             for leg in self.legs:
                 gblInitFootPosX = leg.getInitialFootPosX() + leg.getLegBasePosX()
@@ -227,16 +246,20 @@ class IK(object):
 
 
     def initRipple(self, xSpeed, ySpeed, rSpeed):
+
+        self._rideHeight = 120
+
         self.caseStep.append(2)
         self.caseStep.append(6)
         self.caseStep.append(4)
         self.caseStep.append(1)
         self.caseStep.append(3)
         self.caseStep.append(5)
+
         rotSpeedOffsetX = []
         rotSpeedOffsetY = []
 
-        if (abs(xSpeed) > 5 * 8) or (abs(ySpeed) > 5 * 8) or (abs(rSpeed) > 5 * 8):
+        if (abs(xSpeed) > self._speedStartLimit) or (abs(ySpeed) > self._speedStartLimit) or (abs(rSpeed) > self._speedStartLimit):
             duration = 125
             numTicks = int(round(duration / self._servoUpdatePeriod))
             numCasesPb = 4
@@ -244,17 +267,18 @@ class IK(object):
 
             speedX = 200 * xSpeed / 1023
             speedY = 200 * ySpeed / 1023
-            speedR = 30 * rSpeed / 1023
+            speedR = 15 * rSpeed / 1023
 
             amplitudeX = (speedX * duration * numCasesPb / 1000.0) / 2.0
             amplitudeY = (speedY * duration * numCasesPb / 1000.0) / 2.0
 
             if abs(rSpeed) > abs(xSpeed) and abs(rSpeed) > abs(ySpeed):
-                amplitudeZ = -abs(50 * rSpeed / 1023)
+                amplitudeZ = -5 -abs(40 * rSpeed / 1023)
             elif abs(xSpeed) > abs(ySpeed):
-                amplitudeZ = -abs(50 * xSpeed / 1023)
+                amplitudeZ = -5 -abs(40 * xSpeed / 1023)
             else:
-                amplitudeZ = -abs(50 * ySpeed / 1023)
+                amplitudeZ = -5 -abs(40 * ySpeed / 1023)
+
             for leg in self.legs:
                 gblInitFootPosX = leg.getInitialFootPosX() + leg.getLegBasePosX()
                 gblInitFootPosY = leg.getInitialFootPosY() + leg.getLegBasePosY()
@@ -342,136 +366,6 @@ class IK(object):
 
                     leg.setFootPosX(round(amplitudeX - 2.0 * amplitudeX * (self._tick + 3.0 * numTicks) / (4.0 * numTicks) + rotSpeedOffsetX[leg.getID()]))
                     leg.setFootPosY(round(amplitudeY - 2.0 * amplitudeY * (self._tick + 3.0 * numTicks) / (4.0 * numTicks) + rotSpeedOffsetY[leg.getID()]))
-                    leg.setFootPosZ(0)
-
-                    if self._tick >= numTicks - 1:
-                        self.caseStep[leg.getID()] = 1
-            if self._tick < numTicks -1:
-                self._tick += 1
-            else:
-                self._tick = 0
-
-    def initWave(self, xSpeed, ySpeed, rSpeed):
-        self.caseStep.append(4)
-        self.caseStep.append(5)
-        self.caseStep.append(6)
-        self.caseStep.append(3)
-        self.caseStep.append(2)
-        self.caseStep.append(1)
-        rotSpeedOffsetX = []
-        rotSpeedOffsetY = []
-
-        if (abs(xSpeed) > 5 * 8) or (abs(ySpeed) > 5 * 8) or (abs(rSpeed) > 5 * 8):
-            duration = 500
-            numTicks = int(round(duration / self._servoUpdatePeriod))
-            numCasesPb = 5
-            #print self._tick, numTicks
-
-            speedX = 100 * xSpeed / 1023
-            speedY = 100 * ySpeed / 1023
-            speedR = 30 * rSpeed / 1023
-
-            amplitudeX = (speedX * duration * numCasesPb / 1000.0) / 2.0
-            amplitudeY = (speedY * duration * numCasesPb / 1000.0) / 2.0
-
-            if abs(rSpeed) > abs(xSpeed) and abs(rSpeed) > abs(ySpeed):
-                amplitudeZ = -abs(50 * rSpeed / 1023)
-            elif abs(xSpeed) > abs(ySpeed):
-                amplitudeZ = -abs(50 * xSpeed / 1023)
-            else:
-                amplitudeZ = -abs(50 * ySpeed / 1023)
-            for leg in self.legs:
-                gblInitFootPosX = leg.getInitialFootPosX() + leg.getLegBasePosX()
-                gblInitFootPosY = leg.getInitialFootPosY() + leg.getLegBasePosY()
-
-                caseStep = self.caseStep[leg.getID()]
-                if caseStep == 1:
-
-                    sinRotZ = math.sin(-math.radians(-speedR / 2.0 + speedR * float(self._tick) / float(numTicks)))
-                    cosRotZ = math.cos(-math.radians(-speedR / 2.0 + speedR * float(self._tick) / float(numTicks)))
-
-                    rotSpeedOffsetX.append(gblInitFootPosX * cosRotZ - gblInitFootPosY * sinRotZ - gblInitFootPosX)
-                    rotSpeedOffsetY.append(gblInitFootPosX * sinRotZ + gblInitFootPosY * cosRotZ - gblInitFootPosY)
-
-                    leg.setFootPosX(round(-amplitudeX * math.cos(math.pi * self._tick / numTicks) + rotSpeedOffsetX[leg.getID()]))
-                    leg.setFootPosY(round(-amplitudeY * math.cos(math.pi * self._tick / numTicks) + rotSpeedOffsetY[leg.getID()]))
-                    leg.setFootPosZ(round(amplitudeZ * math.sin(math.pi * self._tick / numTicks)))
-
-                    #print leg.getID(), leg.getFootPosX(), leg.getFootPosY(), leg.getFootPosZ()
-
-                    if self._tick >= numTicks - 1:
-                        self.caseStep[leg.getID()] = 2
-
-                if caseStep == 2:
-
-                    sinRotZ = math.sin(-math.radians(speedR / 2.0 - speedR * float(self._tick) / float((5.0 * numTicks))))
-                    cosRotZ = math.cos(-math.radians(speedR / 2.0 - speedR * float(self._tick) / float((5.0 * numTicks))))
-
-                    rotSpeedOffsetX.append(gblInitFootPosX * cosRotZ - gblInitFootPosY * sinRotZ - gblInitFootPosX)
-                    rotSpeedOffsetY.append(gblInitFootPosX * sinRotZ + gblInitFootPosY * cosRotZ - gblInitFootPosY)
-
-                    leg.setFootPosX(round(amplitudeX - 2.0 * amplitudeX * self._tick / (5.0 * numTicks) + rotSpeedOffsetX[leg.getID()]))
-                    leg.setFootPosX(round(amplitudeY - 2.0 * amplitudeY * self._tick / (5.0 * numTicks) + rotSpeedOffsetY[leg.getID()]))
-                    leg.setFootPosZ(0)
-
-                    if self._tick >= numTicks - 1:
-                        self.caseStep[leg.getID()] = 3
-
-                if caseStep == 3:
-
-                    sinRotZ = math.sin(-math.radians(speedR / 2.0 - speedR * (float(self._tick + numTicks)) / (float(5.0 * numTicks))))
-                    cosRotZ = math.cos(-math.radians(speedR / 2.0 - speedR * (float(self._tick + numTicks)) / (float(5.0 * numTicks))))
-
-                    rotSpeedOffsetX.append(gblInitFootPosX * cosRotZ - gblInitFootPosY * sinRotZ - gblInitFootPosX)
-                    rotSpeedOffsetY.append(gblInitFootPosX * sinRotZ + gblInitFootPosY * cosRotZ - gblInitFootPosY)
-
-                    leg.setFootPosX(round(amplitudeX - 2.0 * amplitudeX * (self._tick + numTicks) / (5.0 * numTicks) + rotSpeedOffsetX[leg.getID()]))
-                    leg.setFootPosY(round(amplitudeY - 2.0 * amplitudeY * (self._tick + numTicks) / (5.0 * numTicks) + rotSpeedOffsetY[leg.getID()]))
-                    leg.setFootPosZ(0)
-
-                    if self._tick >= numTicks - 1:
-                        self.caseStep[leg.getID()] = 4
-
-                if caseStep == 4:
-
-                    sinRotZ = math.sin(-math.radians(speedR / 2.0 - speedR * (float(self._tick + 2.0 * numTicks)) / (float(5.0 * numTicks))))
-                    cosRotZ = math.cos(-math.radians(speedR / 2.0 - speedR * (float(self._tick + 2.0 * numTicks)) / (float(5.0 * numTicks))))
-
-                    rotSpeedOffsetX.append(gblInitFootPosX * cosRotZ - gblInitFootPosY * sinRotZ - gblInitFootPosX)
-                    rotSpeedOffsetY.append(gblInitFootPosX * sinRotZ + gblInitFootPosY * cosRotZ - gblInitFootPosY)
-
-                    leg.setFootPosX(round(amplitudeX - 2.0 * amplitudeX * (self._tick + 2.0 * numTicks) / (5.0 * numTicks) + rotSpeedOffsetX[leg.getID()]))
-                    leg.setFootPosY(round(amplitudeY - 2.0 * amplitudeY * (self._tick + 2.0 * numTicks) / (5.0 * numTicks) + rotSpeedOffsetY[leg.getID()]))
-                    leg.setFootPosZ(0)
-
-                    if self._tick >= numTicks - 1:
-                        self.caseStep[leg.getID()] = 5
-
-                if caseStep == 5:
-
-                    sinRotZ = math.sin(-math.radians(speedR / 2.0 - speedR * (float(self._tick + 3.0 * numTicks)) / (float(5.0 * numTicks))))
-                    cosRotZ = math.cos(-math.radians(speedR / 2.0 - speedR * (float(self._tick + 3.0 * numTicks)) / (float(5.0 * numTicks))))
-
-                    rotSpeedOffsetX.append(gblInitFootPosX * cosRotZ - gblInitFootPosY * sinRotZ - gblInitFootPosX)
-                    rotSpeedOffsetY.append(gblInitFootPosX * sinRotZ + gblInitFootPosY * cosRotZ - gblInitFootPosY)
-
-                    leg.setFootPosX(round(amplitudeX - 2.0 * amplitudeX * (self._tick + 3.0 * numTicks) / (5.0 * numTicks) + rotSpeedOffsetX[leg.getID()]))
-                    leg.setFootPosY(round(amplitudeY - 2.0 * amplitudeY * (self._tick + 3.0 * numTicks) / (5.0 * numTicks) + rotSpeedOffsetY[leg.getID()]))
-                    leg.setFootPosZ(0)
-
-                    if self._tick >= numTicks - 1:
-                        self.caseStep[leg.getID()] = 6
-
-                if caseStep == 6:
-
-                    sinRotZ = math.sin(-math.radians(speedR / 2.0 - speedR * (float(self._tick + 4.0 * numTicks)) / (float(4.0 * numTicks))))
-                    cosRotZ = math.cos(-math.radians(speedR / 2.0 - speedR * (float(self._tick + 4.0 * numTicks)) / (float(4.0 * numTicks))))
-
-                    rotSpeedOffsetX.append(gblInitFootPosX * cosRotZ - gblInitFootPosY * sinRotZ - gblInitFootPosX)
-                    rotSpeedOffsetY.append(gblInitFootPosX * sinRotZ + gblInitFootPosY * cosRotZ - gblInitFootPosY)
-
-                    leg.setFootPosX(round(amplitudeX - 2.0 * amplitudeX * (self._tick + 4.0 * numTicks) / (5.0 * numTicks) + rotSpeedOffsetX[leg.getID()]))
-                    leg.setFootPosY(round(amplitudeY - 2.0 * amplitudeY * (self._tick + 4.0 * numTicks) / (5.0 * numTicks) + rotSpeedOffsetY[leg.getID()]))
                     leg.setFootPosZ(0)
 
                     if self._tick >= numTicks - 1:

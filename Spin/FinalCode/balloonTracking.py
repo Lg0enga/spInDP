@@ -1,6 +1,6 @@
 # USAGE python object_movement.py --video
 # object_tracking_example.mp4 python object_movement.py
-# import the necessary packages yo
+# import the necessary packages 
 from collections import deque
 import numpy as np
 import argparse
@@ -47,13 +47,15 @@ class Vision(object):
 	    'lowerColor' : (0,187,143),
 	    'upperColor' : (11,255,255)
 		}
-	else:		#Default ZIJN OMGEDRAAID !!!! ROOD IS 129,70,55 255,255,255 BLAUW IS 42.142.135 121.255.243
+	else:
 		blueDict = {
 		'lowerColor' : (42,142,135),
 	    'upperColor' : (121,255,243)
 		}
 		redDict = {
-	    'lowerColor' : (129,70,55),
+	    # 'lowerColor' : (129,70,55),
+	    # 'upperColor' : (255,255,255)
+		'lowerColor' : (142,0,90),
 	    'upperColor' : (255,255,255)
 		}
 	# initialize the list of tracked points, the frame counter,
@@ -88,6 +90,9 @@ class Vision(object):
 		self._lastKnownX = 0
 
 		self._redLocated = False
+		
+		self._distance = 0
+		self._punctured = False
 
 	#walk function
 	def WalkTest(self):
@@ -105,8 +110,12 @@ class Vision(object):
 		self._x = 0
 		self._y = 0
 		self._Walk = False
-
 		walk.Prik()
+		time.sleep(1)
+		self._x = -600
+		self._Walk = True
+		time.sleep(4)
+		self._punctured = True
 	#function for calculation the distance to object
 	#x: area of object in pixels
 	def calculateDistance(self, x):
@@ -115,7 +124,7 @@ class Vision(object):
 	#function for determining the spiders walking direction
 	#x: X-coordinate of the vision object
 	def spiderDirection(self, x):
-		print "Spider Direction"
+		print "Spider Direction"	
 		#if the value of x is smaller than 270 it is considered left of center
 		if x < 260:
 			self._lastKnownX = x
@@ -137,7 +146,10 @@ class Vision(object):
 		#if the value of x is between the other 2 values it is considered in center
 		else:
 			self._lastKnownX = x
-			self._x = 800
+			if self._distance < 60.0:
+				self._x = 400											
+			else:
+				self._x = 900
 			self._y = 0
 			self._r = 0
 			self._Walk = True
@@ -231,6 +243,7 @@ class Vision(object):
 				# only proceed if the radius meets a minimum size
 				# in this case if both the blue and red contour are big enough
 				if radius > 20 and radius2 > 20:
+					self._punctured = False
 					self._redLocated = True
 
 					# draw the circle and centroid on the frame,
@@ -249,6 +262,17 @@ class Vision(object):
 					objectDistance = self.calculateDistance(M["m00"])
 					cv2.putText(self.frame, "Afstand: {} cm".format(self.calculateDistance(M["m00"])),(10, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
 
+					#if the distance from camera to the red balloon is smaller than 18cm it performs this block
+					#this is to prevent the prik function to be called more than once in less than 10 frames
+					if self.calculateDistance(M["m00"]) < 21.0:
+						if self.prikDelayCounter == 0:							
+							self.prikDelayCounter = self.counter			
+							self.punctureBalloon()												
+						elif (self.prikDelayCounter+10) < self.counter:		
+							self.prikDelayCounter = 0	
+					
+					
+					self._distance = self.calculateDistance(M["m00"])
 					#call to the spiderwalking function
 					#x: x-coordinate of object
 					self.spiderDirection(x)
@@ -259,6 +283,7 @@ class Vision(object):
 
 				#if only the red contour is big enough this code block runs
 				elif radius > 20:
+					self._punctured = False
 					self._redLocated = True
 					# draw the circle and centroid on the frame,
 					cv2.circle(self.frame, (int(x), int(y)), int(radius),(0, 0, 255), 2)
@@ -272,6 +297,7 @@ class Vision(object):
 					objectDistance = self.calculateDistance(M["m00"])
 					cv2.putText(self.frame, "Afstand: {} cm".format(self.calculateDistance(M["m00"])),(10, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
 
+					self._distance = self.calculateDistance(M["m00"])
 					#call to the spiderwalking function
 					#x: x-coordinate of object
 					self.spiderDirection(x)
@@ -291,7 +317,7 @@ class Vision(object):
 					self.displayDistanceToCenter("blue")
 
 					self._redLocated = False
-					self.spiderRotation(self._lastKnownX)
+					#self.spiderRotation(self._lastKnownX)
 				else:
 					self._redLocated = False
 					#self.spiderRotation(self._lastKnownX)
@@ -308,6 +334,7 @@ class Vision(object):
 
 				# if the red contour is big enough this code block runs
 				if radius > 20:
+					self._punctured = False
 					self._redLocated = True
 					# draw the circle and centroid on the frame,
 					cv2.circle(self.frame, (int(x), int(y)), int(radius),(0, 0, 255), 2)
@@ -320,7 +347,7 @@ class Vision(object):
 
 					#if the distance from camera to the red balloon is smaller than 18cm it performs this block
 					#this is to prevent the prik function to be called more than once in less than 10 frames
-					if self.calculateDistance(M["m00"]) < 26.0:
+					if self.calculateDistance(M["m00"]) < 21.0:
 						if self.prikDelayCounter == 0:							
 							self.prikDelayCounter = self.counter			
 							self.punctureBalloon()												
@@ -329,6 +356,7 @@ class Vision(object):
 
 					#call to the spiderwalking function
 					#x: x-coordinate of object
+					self._distance = self.calculateDistance(M["m00"])
 					self.spiderDirection(x)
 					self._lastKnownX = x
 				else:
@@ -362,7 +390,7 @@ class Vision(object):
 				#self.spiderRotation(self._lastKnownX)
 
 			#show the frame to our screen and increment the frame counter
-			# cv2.imshow("Frame", self.frame)
+			cv2.imshow("Frame", self.frame)
 			key = cv2.waitKey(1) & 0xFF
 			self.counter += 1
 			self.rawCapture.truncate(0)	#empty the frame for the next one
