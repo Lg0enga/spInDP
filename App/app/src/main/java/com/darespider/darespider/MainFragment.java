@@ -7,6 +7,7 @@ import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -16,6 +17,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -25,6 +27,7 @@ import com.darespider.darespider.LineGraphFragment;
 import com.darespider.darespider.R;
 import com.darespider.darespider.VideoFragment;
 
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -49,8 +52,13 @@ public class MainFragment extends Fragment {
     private ImageButton mKOPPEL;
     private ImageButton mTEMPERATUUR;
 
+    private Button mCoxa;
+    private Button mFemur;
+    private Button mTibia;
+
     private TextView mBATTERIJPERCENTAGE;
-    private TextView mHELLING;
+    private TextView mHELLINGX;
+    private TextView mHELLINGY;
     private TextView mPOOT;
     private TextView mCOXASTROOM;
     private TextView mCOXAKRACHT;
@@ -67,14 +75,19 @@ public class MainFragment extends Fragment {
     private TextView mTIBIASTAND;
     private TextView mTIBIAKOPPEL;
     private TextView mTIBIATEMPERATUUR;
-
+    boolean alert = true;
     OnMainFragmentListener mCallback;
 
+    /*
+    The functions from MainAcitivity that the fragment uses
+     */
     public interface OnMainFragmentListener{
         void setAttribute(int attribute);
         void setSelectedLeg(int selectedLeg);
         int getSelectedLeg();
         Spider getSpider();
+        boolean getInternet();
+        ArrayList<Spider> getSpiderList();
     }
 
     @Override
@@ -90,12 +103,15 @@ public class MainFragment extends Fragment {
 
     }
 
+    /*
+    Creates the view for the main fragment
+     */
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.main_fragment, container, false);
 
-        mBATTERIJ = (ProgressBar) view.findViewById(R.id.batterij);
+        mBATTERIJ = (ProgressBar) view.findViewById(R.id.battery);
 
         mLFL = (ImageButton) view.findViewById(R.id.lfl);
         mLML = (ImageButton) view.findViewById(R.id.lml);
@@ -104,30 +120,35 @@ public class MainFragment extends Fragment {
         mLFR = (ImageButton) view.findViewById(R.id.lfr);
         mLMR = (ImageButton) view.findViewById(R.id.lmr);
         mLRR = (ImageButton) view.findViewById(R.id.lrr);
-        mSTROOM = (ImageButton) view.findViewById(R.id.stroom);
-        mKRACHT = (ImageButton) view.findViewById(R.id.kracht);
-        mSTAND = (ImageButton) view.findViewById(R.id.stand);
-        mKOPPEL = (ImageButton) view.findViewById(R.id.koppel);
-        mTEMPERATUUR = (ImageButton) view.findViewById(R.id.temperatuur);
+        mSTROOM = (ImageButton) view.findViewById(R.id.voltage);
+        mKRACHT = (ImageButton) view.findViewById(R.id.power);
+        mSTAND = (ImageButton) view.findViewById(R.id.position);
+        mKOPPEL = (ImageButton) view.findViewById(R.id.torque);
+        mTEMPERATUUR = (ImageButton) view.findViewById(R.id.temperature);
 
-        mBATTERIJPERCENTAGE = (TextView) view.findViewById(R.id.batterijPercentage);
-        mHELLING = (TextView) view.findViewById(R.id.hellingNummer);
-        mPOOT = (TextView) view.findViewById(R.id.poot);
-        mCOXASTROOM = (TextView) view.findViewById(R.id.coxaStroom);
-        mCOXAKRACHT = (TextView) view.findViewById(R.id.coxaKracht);
-        mCOXASTAND = (TextView) view.findViewById(R.id.coxaStand);
-        mCOXAKOPPEL = (TextView) view.findViewById(R.id.coxaKoppel);
-        mCOXATEMPERATUUR = (TextView) view.findViewById(R.id.coxaTemperatuur);
-        mFEMURSTROOM = (TextView) view.findViewById(R.id.femurStroom);
-        mFEMURKRACHT = (TextView) view.findViewById(R.id.femurKracht);
-        mFEMURSTAND = (TextView) view.findViewById(R.id.femurStand);
-        mFEMURKOPPEL = (TextView) view.findViewById(R.id.femurKoppel);
-        mFEMURTEMPERATUUR = (TextView) view.findViewById(R.id.femurTemperatuur);
-        mTIBIASTROOM = (TextView) view.findViewById(R.id.tibiaStroom);
-        mTIBIAKRACHT = (TextView) view.findViewById(R.id.tibiaKracht);
-        mTIBIASTAND = (TextView) view.findViewById(R.id.tibiaStand);
-        mTIBIAKOPPEL = (TextView) view.findViewById(R.id.tibiaKoppel);
-        mTIBIATEMPERATUUR = (TextView) view.findViewById(R.id.tibiaTemperatuur);
+        mCoxa = (Button) view.findViewById(R.id.coxa);
+        mFemur = (Button) view.findViewById(R.id.femur);
+        mTibia = (Button) view.findViewById(R.id.tibia);
+
+        mBATTERIJPERCENTAGE = (TextView) view.findViewById(R.id.batteryPercentage);
+        mHELLINGX = (TextView) view.findViewById(R.id.angleX);
+        mHELLINGY = (TextView) view.findViewById(R.id.angleY);
+        mPOOT = (TextView) view.findViewById(R.id.leg);
+        mCOXASTROOM = (TextView) view.findViewById(R.id.coxaVoltage);
+        mCOXAKRACHT = (TextView) view.findViewById(R.id.coxaPower);
+        mCOXASTAND = (TextView) view.findViewById(R.id.coxaPosition);
+        mCOXAKOPPEL = (TextView) view.findViewById(R.id.coxaTorque);
+        mCOXATEMPERATUUR = (TextView) view.findViewById(R.id.coxaTemperature);
+        mFEMURSTROOM = (TextView) view.findViewById(R.id.femurVoltage);
+        mFEMURKRACHT = (TextView) view.findViewById(R.id.femurPower);
+        mFEMURSTAND = (TextView) view.findViewById(R.id.femurPosition);
+        mFEMURKOPPEL = (TextView) view.findViewById(R.id.femurTorque);
+        mFEMURTEMPERATUUR = (TextView) view.findViewById(R.id.femurTemperature);
+        mTIBIASTROOM = (TextView) view.findViewById(R.id.tibiaVoltage);
+        mTIBIAKRACHT = (TextView) view.findViewById(R.id.tibiaPower);
+        mTIBIASTAND = (TextView) view.findViewById(R.id.tibiaPosition);
+        mTIBIAKOPPEL = (TextView) view.findViewById(R.id.tibiaTorque);
+        mTIBIATEMPERATUUR = (TextView) view.findViewById(R.id.tibiaTemperature);
 
         Glide.with(this).load(R.drawable.lfl).into(mLFL);
         Glide.with(this).load(R.drawable.lml).into(mLML);
@@ -149,6 +170,9 @@ public class MainFragment extends Fragment {
         mSTAND.setOnClickListener(new ButtonHandler());
         mKOPPEL.setOnClickListener(new ButtonHandler());
         mTEMPERATUUR.setOnClickListener(new ButtonHandler());
+        mCoxa.setOnClickListener(new ButtonHandler());
+        mFemur.setOnClickListener(new ButtonHandler());
+        mTibia.setOnClickListener(new ButtonHandler());
 
         setHasOptionsMenu(true);
 
@@ -161,11 +185,24 @@ public class MainFragment extends Fragment {
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            if(!mCallback.getInternet()){ // if there's no internet creates an AlertDialog
+                                while(alert){
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                                    builder.setTitle(R.string.noInternet);
+                                    builder.setMessage(R.string.noInternet);
+                                    builder.setNegativeButton(R.string.okay, null);
+                                    AlertDialog alertDialog = builder.create();
+                                    alertDialog.show();
+                                    alert = false;
+                                }
+                            }
+
                             if (mCallback.getSpider() != null) {
                                 updateText(mCallback.getSpider());
                                 mBATTERIJ.setProgress(mCallback.getSpider().getBatteryPercentage());
                                 mBATTERIJPERCENTAGE.setText(Integer.toString(mCallback.getSpider().getBatteryPercentage()) + "%");
-                                mHELLING.setText(Double.toString(mCallback.getSpider().getSpiderAngle()) + (char) 0x00B0);
+                                mHELLINGX.setText("X:" + Double.toString(mCallback.getSpider().getSpiderAngleX()) + (char) 0x00B0);
+                                mHELLINGY.setText("Y:" + Double.toString(mCallback.getSpider().getSpiderAngleY()) + (char) 0x00B0);
                             }
                         }
                     });
@@ -176,65 +213,122 @@ public class MainFragment extends Fragment {
     }
     public class ButtonHandler implements View.OnClickListener {
 
+        /**
+         * The onClickHandler
+         * @param v the view
+         */
         @Override
         public void onClick(View v) {
             LineGraphFragment lineGraphFragment = new LineGraphFragment();
             FragmentManager fragmentManager = getFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             switch (v.getId()) {
-                case R.id.stroom:
-                    if(mCallback.getSelectedLeg() != -1){
+                case R.id.voltage:
+                    if(mCallback.getSelectedLeg() == -1 || mCallback.getSpiderList().size() == 0){
+                        Snackbar stroomSnackbar = Snackbar.make(v, R.string.voltage, Snackbar.LENGTH_SHORT);
+                        stroomSnackbar.show();
+                    }else{
                         fragmentTransaction.add(R.id.fragment_container, lineGraphFragment);
                         fragmentTransaction.addToBackStack(null);
                         fragmentTransaction.commit();
                         mCallback.setAttribute(0);
-                    }else{
-                        Snackbar stroomSnackbar = Snackbar.make(v, "kracht", Snackbar.LENGTH_SHORT);
-                        stroomSnackbar.show();
                     }
                     break;
-                case R.id.kracht:
-                    if(mCallback.getSelectedLeg() != -1){
+                case R.id.power:
+                    if(mCallback.getSelectedLeg() == -1 || mCallback.getSpiderList().size() == 0){
+                        Snackbar krachtSnackbar = Snackbar.make(v, R.string.power, Snackbar.LENGTH_SHORT);
+                        krachtSnackbar.show();
+                    }else{
                         fragmentTransaction.add(R.id.fragment_container, lineGraphFragment);
                         fragmentTransaction.addToBackStack(null);
                         fragmentTransaction.commit();
                         mCallback.setAttribute(1);
-                    }else{
-                        Snackbar krachtSnackbar = Snackbar.make(v, "kracht", Snackbar.LENGTH_SHORT);
-                        krachtSnackbar.show();
                     }
                     break;
-                case R.id.stand:
-                    if(mCallback.getSelectedLeg() != -1){
+                case R.id.position:
+                    if(mCallback.getSelectedLeg() == -1 || mCallback.getSpiderList().size() == 0){
+                        Snackbar standSnackbar = Snackbar.make(v, R.string.position, Snackbar.LENGTH_SHORT);
+                        standSnackbar.show();
+                    }else {
                         fragmentTransaction.add(R.id.fragment_container, lineGraphFragment);
                         fragmentTransaction.addToBackStack(null);
                         fragmentTransaction.commit();
                         mCallback.setAttribute(2);
-                    }else {
-                        Snackbar standSnackbar = Snackbar.make(v, "stand", Snackbar.LENGTH_SHORT);
-                        standSnackbar.show();
                     }
                     break;
-                case R.id.koppel:
-                    if(mCallback.getSelectedLeg() != -1){
+                case R.id.torque:
+                    if(mCallback.getSelectedLeg() == -1 || mCallback.getSpiderList().size() == 0){
+                        Snackbar koppelSnackbar = Snackbar.make(v, R.string.torque, Snackbar.LENGTH_SHORT);
+                        koppelSnackbar.show();
+                    }else {
                         fragmentTransaction.add(R.id.fragment_container, lineGraphFragment);
                         fragmentTransaction.addToBackStack(null);
                         fragmentTransaction.commit();
                         mCallback.setAttribute(3);
-                    }else {
-                        Snackbar koppelSnackbar = Snackbar.make(v, "koppel", Snackbar.LENGTH_SHORT);
-                        koppelSnackbar.show();
                     }
                     break;
-                case R.id.temperatuur:
-                    if(mCallback.getSelectedLeg() != -1){
+                case R.id.temperature:
+                    if(mCallback.getSelectedLeg() == -1 || mCallback.getSpiderList().size() == 0){
+                        Snackbar temperatuurSnackbar = Snackbar.make(v, R.string.temperature, Snackbar.LENGTH_SHORT);
+                        temperatuurSnackbar.show();
+                    }else {
                         fragmentTransaction.add(R.id.fragment_container, lineGraphFragment);
                         fragmentTransaction.addToBackStack(null);
                         fragmentTransaction.commit();
                         mCallback.setAttribute(4);
-                    }else {
-                        Snackbar temperatuurSnackbar = Snackbar.make(v, "temperatuur", Snackbar.LENGTH_SHORT);
-                        temperatuurSnackbar.show();
+                    }
+                    break;
+                case R.id.coxa:
+                    if(mCallback.getSelectedLeg() == -1) {
+                        Snackbar coxaSnackbar = Snackbar.make(v, R.string.selectLeg, Snackbar.LENGTH_SHORT);
+                        coxaSnackbar.show();
+                    }
+                    else if(mCallback.getSelectedLeg() == -1 || mCallback.getSpiderList().size() == 0){
+                        Snackbar coxaSnackbar = Snackbar.make(v, R.string.noInternet, Snackbar.LENGTH_SHORT);
+                        coxaSnackbar.show();
+                    }else{
+                        fragmentTransaction.add(R.id.fragment_container, lineGraphFragment);
+                        fragmentTransaction.addToBackStack(null);
+                        fragmentTransaction.commit();
+                        mCallback.setAttribute(5);
+                    }
+                    break;
+                case R.id.femur:
+                    if(mCallback.getSelectedLeg() == -1) {
+                        Snackbar femurSnackbar = Snackbar.make(v, R.string.selectLeg, Snackbar.LENGTH_SHORT);
+                        femurSnackbar.show();
+                    }
+                    else if(mCallback.getSpiderList().size() == 0){
+                        Snackbar femurSnackbar = Snackbar.make(v, R.string.noInternet, Snackbar.LENGTH_SHORT);
+                        femurSnackbar.show();
+                    }else{
+                        fragmentTransaction.add(R.id.fragment_container, lineGraphFragment);
+                        fragmentTransaction.addToBackStack(null);
+                        fragmentTransaction.commit();
+                        mCallback.setAttribute(6);
+                    }
+                    break;
+                case R.id.tibia:
+                    if(mCallback.getSelectedLeg() == -1) {
+                        Snackbar coxaSnackbar = Snackbar.make(v, R.string.selectLeg, Snackbar.LENGTH_SHORT);
+                        coxaSnackbar.show();
+                    }
+                    else if(mCallback.getSelectedLeg() == -1 || mCallback.getSpiderList().size() == 0){
+                        Snackbar tibiaSnackbar = Snackbar.make(v, R.string.noInternet, Snackbar.LENGTH_SHORT);
+                        tibiaSnackbar.show();
+                    }else{
+                        fragmentTransaction.add(R.id.fragment_container, lineGraphFragment);
+                        fragmentTransaction.addToBackStack(null);
+                        fragmentTransaction.commit();
+                        mCallback.setAttribute(7);
+                    }
+                    break;
+                case R.id.body:
+                    if(mCallback.getSpiderList().size() != 0){
+                        fragmentTransaction.add(R.id.fragment_container, lineGraphFragment);
+                        fragmentTransaction.addToBackStack(null);
+                        fragmentTransaction.commit();
+                        mCallback.setAttribute(8);
                     }
                     break;
                 case R.id.lfl:
@@ -271,33 +365,43 @@ public class MainFragment extends Fragment {
         }
     }
 
+    /**
+     * Takes a spider and sets the text in the textfield to the appopriate data
+     * @param spider the spider model
+     */
     private void updateText(Spider spider) {
         if(spider != null) {
             if (mCallback.getSelectedLeg() != -1) {
-                mCOXASTROOM.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getVoltage()));
-                mCOXAKRACHT.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getForce()));
-                mCOXASTAND.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getPosition()));
-                mCOXAKOPPEL.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getTorque()));
-                mCOXATEMPERATUUR.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getTemperature()));
-                mFEMURSTROOM.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getVoltage()));
-                mFEMURKRACHT.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getForce()));
-                mFEMURSTAND.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getPosition()));
-                mFEMURKOPPEL.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getTorque()));
-                mFEMURTEMPERATUUR.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getTemperature()));
-                mTIBIASTROOM.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getVoltage()));
-                mTIBIAKRACHT.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getForce()));
-                mTIBIASTAND.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getPosition()));
-                mTIBIAKOPPEL.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getTorque()));
-                mTIBIATEMPERATUUR.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getTemperature()));
+                mCOXASTROOM.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getVoltage()) + " [V]" );
+                mCOXAKRACHT.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getForce()) + " [N]");
+                mCOXASTAND.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getPosition()) + " [" + (char) 0x00B0 + "]");
+                mCOXAKOPPEL.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getTorque()) + " [Nm]");
+                mCOXATEMPERATUUR.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getTemperature()) + " [" +(char) 0x00B0 + " C]");
+                mFEMURSTROOM.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getVoltage()) + " [V]");
+                mFEMURKRACHT.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getForce()) + " [N]");
+                mFEMURSTAND.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getPosition()) + " [" + (char) 0x00B0 + "]");
+                mFEMURKOPPEL.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getTorque()) + " [Nm]");
+                mFEMURTEMPERATUUR.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getTemperature()) + " [" + (char) 0x00B0 + " C]");
+                mTIBIASTROOM.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getVoltage()) + " [V]");
+                mTIBIAKRACHT.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getForce()) + " [N]");
+                mTIBIASTAND.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getPosition()) + " [" + (char) 0x00B0 + "]");
+                mTIBIAKOPPEL.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getTorque()) + " [Nm]");
+                mTIBIATEMPERATUUR.setText(Double.toString(spider.getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getTemperature()) + " [" + (char) 0x00B0 + " C]");
             }
         }
     }
 
+    /*
+    Creates the Menu
+    */
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater){
         inflater.inflate(R.menu.main_fragment_menu, menu);
     }
 
+    /*
+    Does something when an item in the menu gets selected
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
         switch (item.getItemId()){
@@ -313,22 +417,4 @@ public class MainFragment extends Fragment {
                 return super.onOptionsItemSelected(item);
         }
     }
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        MenuInflater inflater = getActivity().getMenuInflater();
-//        inflater.inflate(R.menu.main_fragment_menu, menu);
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        switch (item.getItemId()) {
-//            case R.id.video:
-//
-//                return true;
-//            default:
-//                return super.onOptionsItemSelected(item);
-//        }
-//    }
-
 }
