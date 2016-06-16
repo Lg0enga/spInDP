@@ -1,6 +1,12 @@
 from flask import Flask
 import dynamixel
 import json
+from gyro_MPU import GyroData
+from ADC_batterijpercentage import BatteryPercentage
+import threading
+
+GD = GyroData()
+BP = BatteryPercentage()
 
 app = Flask(__name__)
 
@@ -16,10 +22,16 @@ for servoId in servos:
     newDynamixel = dynamixel.Dynamixel(servoId, net)
     net._dynamixel_map[servoId] = newDynamixel
 
+BatteryPercentageThread = threading.Thread(target=BP.calculatePercentage)
+BatteryPercentageThread.start()
+
 @app.route('/')
 def index():
 
-    data = {'battery_percentage': 80, 'spider_angle': 20, 'legs': [{
+    gyroX = GD.getGyroDataX(0)
+    gyroY = GD.getGyroDataY(0)
+
+    data = {'battery_percentage': BP.getPercentage(), 'spider_angle_x': GD.getGyroDataX(100), 'spider_angle_y': GD.getGyroDataY(100), 'legs': [{
         'servos': [{
             'id': 10,
             'temperature': net._dynamixel_map[10].current_temperature,
@@ -179,7 +191,7 @@ def index():
     return json.dumps(data)
 
 def main():
-    app.run(debug=False, host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0')
 
 if __name__ == '__main__':
     main()

@@ -1,6 +1,7 @@
 from classes.buffer import Buffer
 from classes.server import Server
 from classes.ik import IK
+from classes.gyro_MPU import GyroData
 
 import classes.webservice
 import time
@@ -28,6 +29,7 @@ class Main(object):
 
         self._TripodModeEnabled = False
         self._RippleModeEnabled = False
+        self._CrabModeEnabled = False
         self._BalanceModeEnabled = False
         self._RotationModeEnabled = False
 
@@ -36,6 +38,9 @@ class Main(object):
         self._IdleModeEnabled = False
 
         self._ik = IK()
+        self._gyro = GyroData()
+        self._gyro.getGyroDataX(0)
+        self._gyro.getGyroDataY(0)
 
         self._ServerThread = threading.Thread(target=self._Server.Start)
         self._ServerThread.start()
@@ -67,9 +72,13 @@ class Main(object):
                     print data
                     if "RotationEnable" in data:
                         self._RotationModeEnabled = True
+                        if self._CrabModeEnabled:
+                            self._ik.initInitialPositionsCrab(True)
 
                     if "RotationDisable" in data:
                         self._RotationModeEnabled = False
+                        if self._CrabModeEnabled:
+                            self._ik.initInitialPositionsCrab(False)
 
                     if "IdleMode" in data:
                         for i in range(90):
@@ -78,12 +87,41 @@ class Main(object):
                             self._ik.initTripod(0, 0, 0)
                             self._ik.bodyFK(0, 0, 0, 0, 0, 0)
 
+                    if "BalanceEnabled" in data:
+                        self._BalandeModeEnabled = True
+
+                    if "BalanceEnabled" in data:
+                        self._BalandeModeEnabled = False
                     if "KrabWalk" in data:
                         #self.CheckIdleModeEnabled()
-                        self._ik.initInitialPositionsCrab()
+                        if self._RotationModeEnabled:
+                            self._ik.initInitialPositionsCrabNew(True)
+                        else:
+                            self._ik.initInitialPositionsCrabNew(False)
+
+                        self._CrabModeEnabled = True
                         self._TripodModeEnabled = True
                         self._RippleModeEnabled = False
                         self._Walk = True
+                        self._BalandeModeEnabled = False
+                        self._ik.clearCaseSteps()
+
+                    if "GrindWalk" in data:
+                        self._ik.initInitialPositionsGrindbak()
+                        self._TripodModeEnabled = True
+                        self._RippleModeEnabled = False
+                        self._CrabModeEnabled = False
+                        self._Walk = True
+                        self._BalandeModeEnabled = False
+                        self._ik.clearCaseSteps()
+
+                    if "SprintWalk" in data:
+                        self._ik.initInitialPositionsRace()
+                        self._TripodModeEnabled = True
+                        self._RippleModeEnabled = False
+                        self._CrabModeEnabled = False
+                        self._Walk = True
+                        self._BalandeModeEnabled = False
                         self._ik.clearCaseSteps()
 
                     if "TripodWalk" in data:
@@ -91,7 +129,9 @@ class Main(object):
                         self._ik.initInitialPositions()
                         self._TripodModeEnabled = True
                         self._RippleModeEnabled = False
+                        self._CrabModeEnabled = False
                         self._Walk = True
+                        self._BalandeModeEnabled = False
                         self._ik.clearCaseSteps()
 
                     if "RippleWalk" in data:
@@ -99,7 +139,9 @@ class Main(object):
                         self._ik.initInitialPositions()
                         self._RippleModeEnabled = True
                         self._TripodModeEnabled = False
+                        self._CrabModeEnabled = False
                         self._Walk = True
+                        self._BalandeModeEnabled = False
                         self._ik.clearCaseSteps()
 
                     if "data" in data:
@@ -137,6 +179,12 @@ class Main(object):
 
                 if currentTime - self._previousTime >= 20:
                     self._previousTime = currentTime
+
+                    if self._y > 1023:
+                        self._y = 1023
+
+                    if self._x > 1023:
+                        self._x = 1023
 
                     if self._TripodModeEnabled:
                         if self._RotationModeEnabled:

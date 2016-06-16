@@ -131,7 +131,7 @@ class Vision(object):
 			self._x = 0
 			self._y = -300
 			self._r = 0
-			self._Walk = True
+		pself._Walk = True
 			cv2.putText(self.frame, "Left!",
 			(550, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
 		#if the value of x is greater than 370 it is considered right of center

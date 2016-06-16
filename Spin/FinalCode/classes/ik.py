@@ -21,10 +21,13 @@ class IK(object):
             self.net._dynamixel_map[servoId] = newDynamixel
 
         self._rideHeight = 120
-        self._initLegStretch = 150  #CoxaFootDist
-        self._servoUpdatePeriod = 20
+        self._initLegStretch = 120  #CoxaFootDist
+        self._servoUpdatePeriod = 13
         self._speedStartLimit = 100
         self._duration = 350
+        self._milimeterStep = 300
+        self._rotationDegree = 30
+        self._stepHeight = 40
 
         self._X_COXA        =   122 #MM between front and back legs /2
         self._Y_COXA_FB     =   61  #MM between front/back legs /2
@@ -41,6 +44,15 @@ class IK(object):
 
     #Initialize default foot positions
     def initInitialPositions(self):
+        self._rideHeight = 120
+        self._initLegStretch = 120  #CoxaFootDist
+        self._servoUpdatePeriod = 13
+        self._speedStartLimit = 100
+        self._duration = 350
+        self._milimeterStep = 300
+        self._rotationDegree = 30
+        self._stepHeight = 40
+
         self.legs = []
         leg_right_front = Leg(0)
         leg_right_front.setInitialFootPosX(round(math.sin(math.radians(self._COXA_ANGLE))*self._initLegStretch))
@@ -99,19 +111,215 @@ class IK(object):
     def initInitialPositionsRace(self):
         self._stepHeight = 20
         self._speedStartLimit = 100
-        self._initLegStretch = 150
-        self._rotationDegree = 30
+        self._initLegStretch = 120
         self._rideHeight = 120
         self._duration = 200
+        self._milimeterStep = 700
+        self._servoUpdatePeriod = 13
 
-        self.initInitialPositions()
+        self.legs = []
+        leg_right_front = Leg(0)
+        leg_right_front.setInitialFootPosX(round(math.sin(math.radians(self._COXA_ANGLE))*self._initLegStretch))
+        leg_right_front.setInitialFootPosY(round(math.cos(math.radians(self._COXA_ANGLE))*self._initLegStretch))
+        leg_right_front.setInitialFootPosZ(self._rideHeight)
+        leg_right_front.setLegBasePosX(self._X_COXA)
+        leg_right_front.setLegBasePosY(self._Y_COXA_FB)
+        leg_right_front.setLegBasePosZ(0)
+        self.legs.append(leg_right_front)
+
+        leg_right_middle = Leg(1)
+        leg_right_middle.setInitialFootPosX(0)
+        leg_right_middle.setInitialFootPosY(self._initLegStretch)
+        leg_right_middle.setInitialFootPosZ(self._rideHeight)
+        leg_right_middle.setLegBasePosX(0)
+        leg_right_middle.setLegBasePosY(self._Y_COXA_M)
+        leg_right_middle.setLegBasePosZ(0)
+        self.legs.append(leg_right_middle)
+
+        leg_right_rear = Leg(2)
+        leg_right_rear.setInitialFootPosX(-round(math.sin(math.radians(self._COXA_ANGLE))*self._initLegStretch))
+        leg_right_rear.setInitialFootPosY(round(math.cos(math.radians(self._COXA_ANGLE))*self._initLegStretch))
+        leg_right_rear.setInitialFootPosZ(self._rideHeight)
+        leg_right_rear.setLegBasePosX(-self._X_COXA) #min vergeten
+        leg_right_rear.setLegBasePosY(self._Y_COXA_FB)
+        leg_right_rear.setLegBasePosZ(0)
+        self.legs.append(leg_right_rear)
+
+        leg_left_rear = Leg(3)
+        leg_left_rear.setInitialFootPosX(-round(math.sin(math.radians(self._COXA_ANGLE))*self._initLegStretch))
+        leg_left_rear.setInitialFootPosY(-round(math.cos(math.radians(self._COXA_ANGLE))*self._initLegStretch))
+        leg_left_rear.setInitialFootPosZ(self._rideHeight)
+        leg_left_rear.setLegBasePosX(-self._X_COXA)
+        leg_left_rear.setLegBasePosY(-self._Y_COXA_FB)
+        leg_left_rear.setLegBasePosZ(0)
+        self.legs.append(leg_left_rear)
+
+        leg_left_middle = Leg(4)
+        leg_left_middle.setInitialFootPosX(0)
+        leg_left_middle.setInitialFootPosY(-self._initLegStretch)
+        leg_left_middle.setInitialFootPosZ(self._rideHeight)
+        leg_left_middle.setLegBasePosX(0)
+        leg_left_middle.setLegBasePosY(-self._Y_COXA_M)
+        leg_left_middle.setLegBasePosZ(0)
+        self.legs.append(leg_left_middle)
+
+        leg_left_front = Leg(5)
+        leg_left_front.setInitialFootPosX(round(math.sin(math.radians(self._COXA_ANGLE))*self._initLegStretch))
+        leg_left_front.setInitialFootPosY(-round(math.cos(math.radians(self._COXA_ANGLE))*self._initLegStretch))
+        leg_left_front.setInitialFootPosZ(self._rideHeight)
+        leg_left_front.setLegBasePosX(self._X_COXA)
+        leg_left_front.setLegBasePosY(-self._Y_COXA_FB)
+        leg_left_front.setLegBasePosZ(0)
+        self.legs.append(leg_left_front)
+
+    def initInitialPositionsGrindbak(self):
+        self._stepHeight = 50
+        self._speedStartLimit = 100
+        self._initLegStretch = 120
+        self._rideHeight = 120
+        self._duration = 200
+        self._milimeterStep = 700
+        self._servoUpdatePeriod = 13
+
+        self.legs = []
+        leg_right_front = Leg(0)
+        leg_right_front.setInitialFootPosX(round(math.sin(math.radians(self._COXA_ANGLE))*self._initLegStretch))
+        leg_right_front.setInitialFootPosY(round(math.cos(math.radians(self._COXA_ANGLE))*self._initLegStretch))
+        leg_right_front.setInitialFootPosZ(self._rideHeight)
+        leg_right_front.setLegBasePosX(self._X_COXA)
+        leg_right_front.setLegBasePosY(self._Y_COXA_FB)
+        leg_right_front.setLegBasePosZ(0)
+        self.legs.append(leg_right_front)
+
+        leg_right_middle = Leg(1)
+        leg_right_middle.setInitialFootPosX(0)
+        leg_right_middle.setInitialFootPosY(self._initLegStretch)
+        leg_right_middle.setInitialFootPosZ(self._rideHeight)
+        leg_right_middle.setLegBasePosX(0)
+        leg_right_middle.setLegBasePosY(self._Y_COXA_M)
+        leg_right_middle.setLegBasePosZ(0)
+        self.legs.append(leg_right_middle)
+
+        leg_right_rear = Leg(2)
+        leg_right_rear.setInitialFootPosX(-round(math.sin(math.radians(self._COXA_ANGLE))*self._initLegStretch))
+        leg_right_rear.setInitialFootPosY(round(math.cos(math.radians(self._COXA_ANGLE))*self._initLegStretch))
+        leg_right_rear.setInitialFootPosZ(self._rideHeight)
+        leg_right_rear.setLegBasePosX(-self._X_COXA) #min vergeten
+        leg_right_rear.setLegBasePosY(self._Y_COXA_FB)
+        leg_right_rear.setLegBasePosZ(0)
+        self.legs.append(leg_right_rear)
+
+        leg_left_rear = Leg(3)
+        leg_left_rear.setInitialFootPosX(-round(math.sin(math.radians(self._COXA_ANGLE))*self._initLegStretch))
+        leg_left_rear.setInitialFootPosY(-round(math.cos(math.radians(self._COXA_ANGLE))*self._initLegStretch))
+        leg_left_rear.setInitialFootPosZ(self._rideHeight)
+        leg_left_rear.setLegBasePosX(-self._X_COXA)
+        leg_left_rear.setLegBasePosY(-self._Y_COXA_FB)
+        leg_left_rear.setLegBasePosZ(0)
+        self.legs.append(leg_left_rear)
+
+        leg_left_middle = Leg(4)
+        leg_left_middle.setInitialFootPosX(0)
+        leg_left_middle.setInitialFootPosY(-self._initLegStretch)
+        leg_left_middle.setInitialFootPosZ(self._rideHeight)
+        leg_left_middle.setLegBasePosX(0)
+        leg_left_middle.setLegBasePosY(-self._Y_COXA_M)
+        leg_left_middle.setLegBasePosZ(0)
+        self.legs.append(leg_left_middle)
+
+        leg_left_front = Leg(5)
+        leg_left_front.setInitialFootPosX(round(math.sin(math.radians(self._COXA_ANGLE))*self._initLegStretch))
+        leg_left_front.setInitialFootPosY(-round(math.cos(math.radians(self._COXA_ANGLE))*self._initLegStretch))
+        leg_left_front.setInitialFootPosZ(self._rideHeight)
+        leg_left_front.setLegBasePosX(self._X_COXA)
+        leg_left_front.setLegBasePosY(-self._Y_COXA_FB)
+        leg_left_front.setLegBasePosZ(0)
+        self.legs.append(leg_left_front)
 
     #Initialize crab foot positions
-    def initInitialPositionsCrab(self):
-        self._stepHeight = 10
+    def initInitialPositionsCrab(self, rotation = False):
+        self._stepHeight = 50
         self._speedStartLimit = 60
-        self._initLegStretch = 120
-        self._rotationDegree = 5
+        self._initLegStretch = 100
+        self._rotationDegree = 30
+        self._milimeterStep = 250
+        self._rideHeight = 120
+
+        if rotation:
+            self._duration = 120
+        else:
+            self._duration = 300
+
+        self._servoUpdatePeriod = 20
+
+        self.legs = []
+        leg_right_front = Leg(0)
+        leg_right_front.setInitialFootPosX(0)
+        leg_right_front.setInitialFootPosY(self._initLegStretch)
+        leg_right_front.setInitialFootPosZ(self._rideHeight)
+        leg_right_front.setLegBasePosX(self._X_COXA)
+        leg_right_front.setLegBasePosY(self._Y_COXA_FB)
+        leg_right_front.setLegBasePosZ(0)
+        self.legs.append(leg_right_front)
+
+        leg_right_middle = Leg(1)
+        leg_right_middle.setInitialFootPosX(0)
+        leg_right_middle.setInitialFootPosY(self._initLegStretch)
+        leg_right_middle.setInitialFootPosZ(self._rideHeight)
+        leg_right_middle.setLegBasePosX(0)
+        leg_right_middle.setLegBasePosY(self._Y_COXA_M)
+        leg_right_middle.setLegBasePosZ(0)
+        self.legs.append(leg_right_middle)
+
+        leg_right_rear = Leg(2)
+        leg_right_rear.setInitialFootPosX(0)
+        leg_right_rear.setInitialFootPosY(self._initLegStretch)
+        leg_right_rear.setInitialFootPosZ(self._rideHeight)
+        leg_right_rear.setLegBasePosX(-self._X_COXA)
+        leg_right_rear.setLegBasePosY(self._Y_COXA_FB)
+        leg_right_rear.setLegBasePosZ(0)
+        self.legs.append(leg_right_rear)
+
+        leg_left_rear = Leg(3)
+        leg_left_rear.setInitialFootPosX(0)
+        leg_left_rear.setInitialFootPosY(-self._initLegStretch)
+        leg_left_rear.setInitialFootPosZ(self._rideHeight)
+        leg_left_rear.setLegBasePosX(-self._X_COXA)
+        leg_left_rear.setLegBasePosY(-self._Y_COXA_FB)
+        leg_left_rear.setLegBasePosZ(0)
+        self.legs.append(leg_left_rear)
+
+        leg_left_middle = Leg(4)
+        leg_left_middle.setInitialFootPosX(0)
+        leg_left_middle.setInitialFootPosY(-self._initLegStretch)
+        leg_left_middle.setInitialFootPosZ(self._rideHeight)
+        leg_left_middle.setLegBasePosX(0)
+        leg_left_middle.setLegBasePosY(-self._Y_COXA_M)
+        leg_left_middle.setLegBasePosZ(0)
+        self.legs.append(leg_left_middle)
+
+        leg_left_front = Leg(5)
+        leg_left_front.setInitialFootPosX(0)
+        leg_left_front.setInitialFootPosY(-self._initLegStretch)
+        leg_left_front.setInitialFootPosZ(self._rideHeight)
+        leg_left_front.setLegBasePosX(self._X_COXA)
+        leg_left_front.setLegBasePosY(-self._Y_COXA_FB)
+        leg_left_front.setLegBasePosZ(0)
+        self.legs.append(leg_left_front)
+
+    #Initialize crab foot positions
+    def initInitialPositionsCrabNew(self, rotation = False):
+        self._stepHeight = 43
+        self._speedStartLimit = 60
+        self._initLegStretch = 100
+        self._rotationDegree = 15
+        self._milimeterStep = 300
+        self._rideHeight = 120
+
+        self._duration = 250
+
+        self._servoUpdatePeriod = 20
+
         self.legs = []
         leg_right_front = Leg(0)
         leg_right_front.setInitialFootPosX(0)
@@ -184,22 +392,21 @@ class IK(object):
         rotSpeedOffsetY = []
 
         if (abs(xSpeed) > self._speedStartLimit) or (abs(ySpeed) > self._speedStartLimit) or (abs(rSpeed) > self._speedStartLimit):
-            duration = duration #duration of pull back step cycle (ms)
-            numTicks = int(round(duration / self._servoUpdatePeriod)) #number of ticks in pull back step cycle
+            numTicks = int(round(self._duration / self._servoUpdatePeriod)) #number of ticks in pull back step cycle
 
-            speedX = 700 * xSpeed / 1023 #300mm/s step
-            speedY = 700 * ySpeed / 1023 #300mm/s step
+            speedX = self._milimeterStep * xSpeed / 1023 #300mm/s step
+            speedY = self._milimeterStep * ySpeed / 1023 #300mm/s step
             speedR = self._rotationDegree * rSpeed / 1023 #30 degrees/s top rotation speed
 
-            amplitudeX = (speedX * duration / 1000.0) / 2.0
-            amplitudeY = (speedY * duration / 1000.0) / 2.0
+            amplitudeX = (speedX * self._duration / 1000.0) / 2.0
+            amplitudeY = (speedY * self._duration / 1000.0) / 2.0
 
             if abs(rSpeed) > abs(xSpeed) and abs(rSpeed) > abs(ySpeed):
                 amplitudeZ = -7 -abs(self._stepHeight * rSpeed / 1023)
             elif abs(xSpeed) > abs(ySpeed):
                 amplitudeZ = -7 -abs(self._stepHeight * xSpeed / 1023)
             else:
-                amplitudeZ = -7 -abs(self._stepHeight * ySpeed / 512)
+                amplitudeZ = -abs(self._stepHeight * ySpeed / 1500)
 
             for leg in self.legs:
                 gblInitFootPosX = leg.getInitialFootPosX() + leg.getLegBasePosX()
@@ -260,8 +467,8 @@ class IK(object):
         rotSpeedOffsetY = []
 
         if (abs(xSpeed) > self._speedStartLimit) or (abs(ySpeed) > self._speedStartLimit) or (abs(rSpeed) > self._speedStartLimit):
-            duration = 125
-            numTicks = int(round(duration / self._servoUpdatePeriod))
+            self._duration = 125
+            numTicks = int(round(self._duration / self._servoUpdatePeriod))
             numCasesPb = 4
             #print self._tick, numTicks
 
@@ -269,8 +476,8 @@ class IK(object):
             speedY = 200 * ySpeed / 1023
             speedR = 15 * rSpeed / 1023
 
-            amplitudeX = (speedX * duration * numCasesPb / 1000.0) / 2.0
-            amplitudeY = (speedY * duration * numCasesPb / 1000.0) / 2.0
+            amplitudeX = (speedX * self._duration * numCasesPb / 1000.0) / 2.0
+            amplitudeY = (speedY * self._duration * numCasesPb / 1000.0) / 2.0
 
             if abs(rSpeed) > abs(xSpeed) and abs(rSpeed) > abs(ySpeed):
                 amplitudeZ = -5 -abs(40 * rSpeed / 1023)
