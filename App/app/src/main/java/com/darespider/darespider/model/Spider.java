@@ -17,9 +17,11 @@ public class Spider implements Parcelable {
     @SerializedName("battery_percentage")
     int BatteryPercentage;
 
-    @SerializedName("spider_angle")
-    double SpiderAngle;
+    @SerializedName("spider_angle_x")
+    double SpiderAngleX;
 
+    @SerializedName("spider_angle_y")
+    double SpiderAngleY;
     @SerializedName("legs")
     ArrayList<Leg> Legs;
 
@@ -31,12 +33,20 @@ public class Spider implements Parcelable {
         BatteryPercentage = batteryPercentage;
     }
 
-    public double getSpiderAngle(){
-        return SpiderAngle;
+    public double getSpiderAngleX(){
+        return SpiderAngleX;
     }
 
-    public void setSpiderAngle(double spiderAngle){
-        SpiderAngle = spiderAngle;
+    public void setSpiderAngleX(double spiderAngleX){
+        SpiderAngleX = spiderAngleX;
+    }
+
+    public double getSpiderAngleY(){
+        return SpiderAngleY;
+    }
+
+    public void setSpiderAngleY(double spiderAngleY){
+        SpiderAngleY = spiderAngleY;
     }
 
     public ArrayList<Leg> getLegs(){
@@ -51,7 +61,8 @@ public class Spider implements Parcelable {
 
     protected Spider(Parcel in) {
         BatteryPercentage = in.readInt();
-        SpiderAngle = in.readDouble();
+        SpiderAngleX = in.readDouble();
+        SpiderAngleY = in.readDouble();
         if (in.readByte() == 0x01) {
             Legs = new ArrayList<Leg>();
             in.readList(Legs, Leg.class.getClassLoader());
@@ -68,7 +79,8 @@ public class Spider implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(BatteryPercentage);
-        dest.writeDouble(SpiderAngle);
+        dest.writeDouble(SpiderAngleX);
+        dest.writeDouble(SpiderAngleY);
         if (Legs == null) {
             dest.writeByte((byte) (0x00));
         } else {

@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
+import com.bumptech.glide.load.engine.Resource;
 import com.darespider.darespider.R;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Legend;
@@ -40,7 +42,7 @@ import com.darespider.darespider.model.Spider;
 public class LineGraphFragment extends Fragment{
 
     OnLineGraphFragmentListener mCallback;
-
+    boolean alert = true;
 
 
 //    int entryNumber = 0;
@@ -59,20 +61,16 @@ public class LineGraphFragment extends Fragment{
     private LineChart mChart;
     public int number;
 
+    /*
+    The functions from the mainActivity that the fragment uses
+     */
     public interface OnLineGraphFragmentListener {
         int getAttribute();
-
         int getSelectedLeg();
-
         int getIterator();
-
-        int getSeconds();
-
         ArrayList<Integer> getIteratorList();
-
-        ArrayList<Integer> getSecondsList();
-
         ArrayList<Spider> getSpiderList();
+        boolean getInternet();
     }
 
     public void onAttach(Activity activity) {
@@ -87,6 +85,9 @@ public class LineGraphFragment extends Fragment{
 
     }
 
+    /*
+     Creates the view for the LineChart
+     */
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.line_graph_fragment, container, false);
 
@@ -94,7 +95,7 @@ public class LineGraphFragment extends Fragment{
 
         switch (mCallback.getAttribute()) {
             case 0:
-                mChart.setDescription("Stroom");
+                mChart.setDescription("Voltage");
                 break;
             case 1:
                 mChart.setDescription("Kracht");
@@ -149,7 +150,7 @@ public class LineGraphFragment extends Fragment{
         yl.setDrawGridLines(true);
         yl.setSpaceBottom(0f);
         yl.setDrawZeroLine(true);
-        ;
+        yl.setGranularity(5);
 
         YAxis yl2 = mChart.getAxisRight();
         yl2.setEnabled(false);
@@ -159,107 +160,187 @@ public class LineGraphFragment extends Fragment{
             addEntry(i);
         }
         addSecondData();
+
+
         return view;
     }
 
+    /**
+     * Adds an entry to the LineData.
+     * The iterator determines how many times the chart will update.
+     * @param i the iterator
+     */
     private void addEntry(int i){
-        if(i > -1) {
-            LineData data = mChart.getData();
+ //       try{
+            if(i > -1) {
+                LineData data = mChart.getData();
+                if (data != null) {
+                    ILineDataSet coxaOrVoltageOrBatterySet = data.getDataSetByIndex(0);
+                    ILineDataSet femurOrForceOrSlopeXSet = data.getDataSetByIndex(1);
+                    ILineDataSet tibiaOrPositionOrSlopeYSet = data.getDataSetByIndex(2);
+                    ILineDataSet torqueSet = data.getDataSetByIndex(3);
+                    ILineDataSet temperatureSet = data.getDataSetByIndex(4);
+                    if (coxaOrVoltageOrBatterySet == null) {
+                        if(mCallback.getAttribute() > 4 && mCallback.getAttribute() != 8){
+                            coxaOrVoltageOrBatterySet = createSet("Voltage", ColorTemplate.JOYFUL_COLORS[0]);
+                        }
+                        else if(mCallback.getAttribute() == 8){
+                            coxaOrVoltageOrBatterySet = createSet("Batterij", ColorTemplate.JOYFUL_COLORS[0]);
+                        }
+                        else{
+                            coxaOrVoltageOrBatterySet = createSet("Coxa", ColorTemplate.JOYFUL_COLORS[0]);
+                        }
+                        data.addDataSet(coxaOrVoltageOrBatterySet);
+                    }
+                    if (femurOrForceOrSlopeXSet == null) {
+                        if(mCallback.getAttribute() > 4 && mCallback.getAttribute() != 8){
+                            femurOrForceOrSlopeXSet = createSet("Kracht", ColorTemplate.JOYFUL_COLORS[1]);
+                        }
+                        else if(mCallback.getAttribute() == 8){
+                            femurOrForceOrSlopeXSet = createSet("Helling X", ColorTemplate.JOYFUL_COLORS[1]);
+                        }
+                        else{
+                            femurOrForceOrSlopeXSet = createSet("Femur", ColorTemplate.JOYFUL_COLORS[1]);
+                        }
+                        data.addDataSet(femurOrForceOrSlopeXSet);
+                    }
+                    if (tibiaOrPositionOrSlopeYSet == null) {
+                        if(mCallback.getAttribute() > 4 && mCallback.getAttribute() != 8){
+                            tibiaOrPositionOrSlopeYSet = createSet("Stand", ColorTemplate.JOYFUL_COLORS[2]);
+                        }
+                        else if(mCallback.getAttribute() == 8){
+                            tibiaOrPositionOrSlopeYSet = createSet("Helling Y", ColorTemplate.JOYFUL_COLORS[2]);
+                        }
+                        else{
+                            tibiaOrPositionOrSlopeYSet = createSet("Tibia", ColorTemplate.JOYFUL_COLORS[2]);
+                        }
+                        data.addDataSet(tibiaOrPositionOrSlopeYSet);
+                    }
+                    if(torqueSet == null){
+                        torqueSet = createSet("Koppel", ColorTemplate.JOYFUL_COLORS[3]);
+                        data.addDataSet(torqueSet);
+                    }
+                    if(temperatureSet == null){
+                        temperatureSet = createSet("Temperatuur", ColorTemplate.JOYFUL_COLORS[4]);
+                        data.addDataSet(temperatureSet);
+                    }
+                    Entry entry1;
+                    Entry entry2;
+                    Entry entry3;
+                    Entry entry4;
+                    Entry entry5;
+                    data.addXValue(Integer.toString(mCallback.getIteratorList().get(i)));
 
-            if (data != null) {
-                ILineDataSet coxaSet = data.getDataSetByIndex(0);
-                ILineDataSet femurSet = data.getDataSetByIndex(1);
-                ILineDataSet tibiaSet = data.getDataSetByIndex(2);
-                if (coxaSet == null) {
-                    coxaSet = createSet("Coxa");
-                    data.addDataSet(coxaSet);
+                    switch (mCallback.getAttribute()){
+                        case 0:
+                            entry1 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getVoltage(), i);
+                            entry2 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getVoltage(), i);
+                            entry3 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getVoltage(), i);
+                            data.addEntry(entry1, 0);
+                            data.addEntry(entry2, 1);
+                            data.addEntry(entry3, 2);
+                            break;
+                        case 1:
+                            entry1 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getForce(), i);
+                            entry2 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getForce(), i);
+                            entry3 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getForce(), i);
+                            data.addEntry(entry1, 0);
+                            data.addEntry(entry2, 1);
+                            data.addEntry(entry3, 2);
+                            break;
+                        case 2:
+                            entry1 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getPosition(), i);
+                            entry2 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getPosition(), i);
+                            entry3 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getPosition(), i);
+                            data.addEntry(entry1, 0);
+                            data.addEntry(entry2, 1);
+                            data.addEntry(entry3, 2);
+                            break;
+                        case 3:
+                            entry1 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getTorque(), i);
+                            entry2 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getTorque(), i);
+                            entry3 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getTorque(), i);
+                            data.addEntry(entry1, 0);
+                            data.addEntry(entry2, 1);
+                            data.addEntry(entry3, 2);
+                            break;
+                        case 4:
+                            entry1 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getTemperature(), i);
+                            entry2 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getTemperature(), i);
+                            entry3 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getTemperature(), i);
+                            data.addEntry(entry1, 0);
+                            data.addEntry(entry2, 1);
+                            data.addEntry(entry3, 2);
+                            break;
+                        case 5:
+                            entry1 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getVoltage(), i);
+                            entry2 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getForce(), i);
+                            entry3 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getPosition(), i);
+                            entry4 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getTorque(), i);
+                            entry5 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getTemperature(), i);
+                            data.addEntry(entry1, 0);
+                            data.addEntry(entry2, 1);
+                            data.addEntry(entry3, 2);
+                            data.addEntry(entry4, 3);
+                            data.addEntry(entry5, 4);
+                            break;
+                        case 6:
+                            entry1 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getVoltage(), i);
+                            entry2 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getForce(), i);
+                            entry3 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getPosition(), i);
+                            entry4 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getTorque(), i);
+                            entry5 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getTemperature(), i);
+                            data.addEntry(entry1, 0);
+                            data.addEntry(entry2, 1);
+                            data.addEntry(entry3, 2);
+                            data.addEntry(entry4, 3);
+                            data.addEntry(entry5, 4);
+                            break;
+                        case 7:
+                            entry1 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getVoltage(), i);
+                            entry2 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getForce(), i);
+                            entry3 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getPosition(), i);
+                            entry4 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getTorque(), i);
+                            entry5 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getTemperature(), i);
+                            data.addEntry(entry1, 0);
+                            data.addEntry(entry2, 1);
+                            data.addEntry(entry3, 2);
+                            data.addEntry(entry4, 3);
+                            data.addEntry(entry5, 4);
+                            break;
+                        case 8:
+                            entry1 = new Entry((float) mCallback.getSpiderList().get(i).getBatteryPercentage(), i);
+                            entry2 = new Entry((float) mCallback.getSpiderList().get(i).getSpiderAngleX(), i);
+                            entry3 = new Entry((float) mCallback.getSpiderList().get(i).getSpiderAngleY(), i);
+                            data.addEntry(entry1, 0);
+                            data.addEntry(entry2, 1);
+                            data.addEntry(entry3, 2);
+                            break;
+                    }
+                    mChart.notifyDataSetChanged();
+                    mChart.setVisibleXRangeMaximum(10);
+                    mChart.moveViewToX(data.getXValCount() - 11);
+                    mChart.invalidate();
                 }
-                if (femurSet == null) {
-                    femurSet = createSet("Femur");
-                    data.addDataSet(femurSet);
-                }
-                if (tibiaSet == null) {
-                    tibiaSet = createSet("Tibia");
-                    data.addDataSet(tibiaSet);
-                }
-                Entry entry1;
-                Entry entry2;
-                Entry entry3;
-                data.addXValue(Integer.toString(mCallback.getSecondsList().get(i)));
-                switch (mCallback.getAttribute()){
-                    case 0:
-                        entry1 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getVoltage(), i);
-                        entry2 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getVoltage(), i);
-                        entry3 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getVoltage(), i);
-                        data.addEntry(entry1, 0);
-                        data.addEntry(entry2, 1);
-                        data.addEntry(entry3, 2);
-                        break;
-                    case 1:
-                        entry1 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getForce(), i);
-                        entry2 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getForce(), i);
-                        entry3 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getForce(), i);
-                        data.addEntry(entry1, 0);
-                        data.addEntry(entry2, 1);
-                        data.addEntry(entry3, 2);
-                        break;
-                    case 2:
-                        entry1 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getPosition(), i);
-                        entry2 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getPosition(), i);
-                        entry3 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getPosition(), i);
-                        data.addEntry(entry1, 0);
-                        data.addEntry(entry2, 1);
-                        data.addEntry(entry3, 2);
-                        break;
-                    case 3:
-                        entry1 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getTorque(), i);
-                        entry2 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getTorque(), i);
-                        entry3 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getTorque(), i);
-                        data.addEntry(entry1, 0);
-                        data.addEntry(entry2, 1);
-                        data.addEntry(entry3, 2);
-                        break;
-                    case 4:
-                        entry1 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(0).getTemperature(), i);
-                        entry2 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(1).getTemperature(), i);
-                        entry3 = new Entry((float) mCallback.getSpiderList().get(i).getLegs().get(mCallback.getSelectedLeg()).getServos().get(2).getTemperature(), i);
-                        data.addEntry(entry1, 0);
-                        data.addEntry(entry2, 1);
-                        data.addEntry(entry3, 2);
-                        break;
-                }
-                mChart.notifyDataSetChanged();
-                mChart.invalidate();
             }
-        }
-    }
-    //    private void addFirstData(){
-//        new Thread(new Runnable() {
-//
-//            @Override
-//            public void run() {
-//                for(number = 0; number < mCallback.getIteratorList().size(); number++) {
-//
-//                    if(getActivity() == null)
-//                        return;
-//                    getActivity().runOnUiThread(new Runnable() {
-//
-//                        @Override
-//                        public void run() {
-//                            addEntry(number);
-//                        }
-//                    });
-//
-//                    try {
-//                        Thread.sleep(35);
-//                    } catch (InterruptedException e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                    }
-//                }
+        //}catch(IndexOutOfBoundsException e){
+//            while(alert){
+//                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+//                builder.setTitle(R.string.noInternet);
+//                builder.setMessage(R.string.noInternet);
+//                builder.setNegativeButton(R.string.okay, null);
+//                AlertDialog alertDialog = builder.create();
+//                alertDialog.show();
+//                alert = false;
 //            }
-//        }).start();
-//    }
+//            mChart.setData(null);
+        //}
+
+    }
+
+    /**
+     * Adds an entry to the LineDataSet every second
+     */
     private void addSecondData(){
         new Thread(new Runnable() {
 
@@ -273,7 +354,13 @@ public class LineGraphFragment extends Fragment{
 
                         @Override
                         public void run() {
-                            addEntry(number);
+                            if(mCallback.getInternet()){
+                                addEntry(number);
+                            }
+                            else{
+                                int test = 9;
+                            }
+
                         }
                     });
 
@@ -287,10 +374,18 @@ public class LineGraphFragment extends Fragment{
             }
         }).start();
     }
-    private LineDataSet createSet(String name) {
+
+    /**
+     * Returns a LineDataSet which the LineChart can use
+     * @param name the name of the data set
+     * @param color the color the data set is given
+     * @return the LineDataSet
+     */
+
+    private LineDataSet createSet(String name, int color) {
         LineDataSet set = new LineDataSet(null, name);
         set.setAxisDependency(YAxis.AxisDependency.LEFT);
-        set.setColor(ColorTemplate.getHoloBlue());
+        set.setColor(color);
         set.setCircleColor(Color.WHITE);
         set.setLineWidth(2f);
         set.setCircleRadius(4f);

@@ -17,7 +17,7 @@
             android:text="@string/logo"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.6"
+            android:layout_weight="0.4"
             android:gravity="center"
             android:fontFamily="sans-serif"
             android:textColor="@color/dareDevil"
@@ -26,10 +26,10 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:layout_weight="0.2">
+            android:layout_weight="0.3">
             <TextView
                 android:id="@+id/percentage"
-                android:text="@string/batterij"
+                android:text="@string/battery"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
@@ -37,8 +37,8 @@
                 android:fontFamily="sans-serif"
                 android:textSize="14dp"/>
             <TextView
-                android:id="@+id/helling"
-                android:text="@string/helling"
+                android:id="@+id/angle"
+                android:text="@string/angle"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
@@ -50,7 +50,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:layout_weight="0.2">
+            android:layout_weight="0.3">
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
@@ -58,33 +58,50 @@
                 android:layout_weight="1">
                 <ProgressBar
                     style="?android:attr/progressBarStyleHorizontal"
-                    android:id="@+id/batterij"
+                    android:id="@+id/battery"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:layout_centerInParent="true"
                     android:indeterminate="false"
-                    android:layout_gravity="center"
+                    android:layout_gravity="center_vertical"
                     android:progressDrawable="@drawable/cirular_battery"/>
                 <TextView
-                    android:id="@+id/batterijPercentage"
+                    android:id="@+id/batteryPercentage"
+                    android:text="@string/batteryPercentage"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:fontFamily="sans-serif"
                     android:textSize="14dp"
                     android:layout_gravity="start"
-                    android:gravity="center"/>
+                    android:gravity="center_vertical"/>
             </LinearLayout>
-
-            <TextView
-                android:id="@+id/hellingNummer"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1"
-                android:fontFamily="sans-serif"
-                android:textSize="14dp"
-                android:gravity="center"/>
+                android:orientation="horizontal"
+                android:layout_weight="1">
+                <TextView
+                    android:id="@+id/angleX"
+                    android:text="@string/angleX"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:fontFamily="sans-serif"
+                    android:textSize="14dp"
+                    android:gravity="center_vertical"/>
+                <TextView
+                    android:id="@+id/angleY"
+                    android:text="@string/angleY"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:fontFamily="sans-serif"
+                    android:textSize="14dp"
+                    android:gravity="center_vertical"/>
+            </LinearLayout>
+
         </LinearLayout>
     </LinearLayout>
     <LinearLayout
@@ -170,14 +187,14 @@
         <TextView
             android:textStyle="bold"
             android:textSize="10dp"
-            android:id="@+id/poot"
+            android:id="@+id/leg"
             android:textColor="@color/Black"
             android:gravity="center"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.16666666"/>
         <ImageButton
-            android:id="@+id/stroom"
+            android:id="@+id/voltage"
             android:padding="@dimen/activity_horizontal_margin"
             android:src="@drawable/electricity52"
             android:adjustViewBounds="true"
@@ -187,7 +204,7 @@
             android:layout_weight="0.16666666"
             android:background="@drawable/ripple"/>
         <ImageButton
-            android:id="@+id/kracht"
+            android:id="@+id/power"
             android:padding="@dimen/activity_horizontal_margin"
             android:src="@drawable/hibernate52"
             android:adjustViewBounds="true"
@@ -197,7 +214,7 @@
             android:layout_weight="0.16666666"
             android:background="@drawable/ripple"/>
         <ImageButton
-            android:id="@+id/stand"
+            android:id="@+id/position"
             android:padding="@dimen/activity_horizontal_margin"
             android:src="@drawable/leg52"
             android:adjustViewBounds="true"
@@ -207,7 +224,7 @@
             android:layout_weight="0.16666666"
             android:background="@drawable/ripple"/>
         <ImageButton
-            android:id="@+id/koppel"
+            android:id="@+id/torque"
             android:padding="@dimen/activity_horizontal_margin"
             android:src="@drawable/restart52"
             android:adjustViewBounds="true"
@@ -217,7 +234,7 @@
             android:layout_weight="0.16666666"
             android:background="@drawable/ripple"/>
         <ImageButton
-            android:id="@+id/temperatuur"
+            android:id="@+id/temperature"
             android:padding="@dimen/activity_horizontal_margin"
             android:src="@drawable/temperature52"
             android:adjustViewBounds="true"
@@ -232,46 +249,46 @@
         android:layout_height="0dip"
         android:orientation="horizontal"
         android:layout_weight="0.1">
-        <TextView
-            android:textStyle="bold"
+        <Button
             android:id="@+id/coxa"
             android:text="@string/coxa"
             android:textColor="@color/Black"
             android:gravity="center"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.16666666"/>
+            android:layout_weight="0.16666666"
+            android:background="@drawable/ripple"/>
         <TextView
-            android:id="@+id/coxaStroom"
-            android:text="@string/coxaStroom"
+            android:id="@+id/coxaVoltage"
+            android:text="@string/coxaVoltage"
             android:gravity="center"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.16666666"/>
         <TextView
-            android:id="@+id/coxaKracht"
-            android:text="@string/coxaKracht"
+            android:id="@+id/coxaPower"
+            android:text="@string/coxaPower"
             android:gravity="center"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.16666666"/>
         <TextView
-            android:id="@+id/coxaStand"
-            android:text="@string/coxaStand"
+            android:id="@+id/coxaPosition"
+            android:text="@string/coxaPosition"
             android:gravity="center"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.16666666"/>
         <TextView
-            android:id="@+id/coxaKoppel"
-            android:text="@string/coxaKoppel"
+            android:id="@+id/coxaTorque"
+            android:text="@string/coxaTorque"
             android:gravity="center"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.16666666"/>
         <TextView
-            android:id="@+id/coxaTemperatuur"
-            android:text="@string/coxaTemperatuur"
+            android:id="@+id/coxaTemperature"
+            android:text="@string/coxaTemperature"
             android:gravity="center"
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -282,7 +299,7 @@
         android:layout_height="0dip"
         android:orientation="horizontal"
         android:layout_weight="0.1">
-        <TextView
+        <Button
             android:textStyle="bold"
             android:id="@+id/femur"
             android:text="@string/femur"
@@ -290,38 +307,39 @@
             android:gravity="center"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.16666666"/>
+            android:layout_weight="0.16666666"
+            android:background="@drawable/ripple"/>
         <TextView
-            android:id="@+id/femurStroom"
-            android:text="@string/femurStroom"
+            android:id="@+id/femurVoltage"
+            android:text="@string/femurVoltage"
             android:gravity="center"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.16666666"/>
         <TextView
-            android:id="@+id/femurKracht"
-            android:text="@string/femurKracht"
+            android:id="@+id/femurPower"
+            android:text="@string/femurPower"
             android:gravity="center"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.16666666"/>
         <TextView
-            android:id="@+id/femurStand"
-            android:text="@string/femurStand"
+            android:id="@+id/femurPosition"
+            android:text="@string/femurPosition"
             android:gravity="center"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.16666666"/>
         <TextView
-            android:id="@+id/femurKoppel"
-            android:text="@string/femurKoppel"
+            android:id="@+id/femurTorque"
+            android:text="@string/femurTorque"
             android:gravity="center"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.16666666"/>
         <TextView
-            android:id="@+id/femurTemperatuur"
-            android:text="@string/femurTemperatuur"
+            android:id="@+id/femurTemperature"
+            android:text="@string/femurTemperature"
             android:gravity="center"
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -332,7 +350,7 @@
         android:layout_height="0dip"
         android:orientation="horizontal"
         android:layout_weight="0.1">
-        <TextView
+        <Button
             android:textStyle="bold"
             android:id="@+id/tibia"
             android:text="@string/tibia"
@@ -340,38 +358,39 @@
             android:gravity="center"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.16666666"/>
+            android:layout_weight="0.16666666"
+            android:background="@drawable/ripple"/>
         <TextView
-            android:id="@+id/tibiaStroom"
-            android:text="@string/tibiaStroom"
+            android:id="@+id/tibiaVoltage"
+            android:text="@string/tibiaVoltage"
             android:gravity="center"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.16666666"/>
         <TextView
-            android:id="@+id/tibiaKracht"
-            android:text="@string/tibiaKracht"
+            android:id="@+id/tibiaPower"
+            android:text="@string/tibiaPower"
             android:gravity="center"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.16666666"/>
         <TextView
-            android:id="@+id/tibiaStand"
-            android:text="@string/tibiaStand"
+            android:id="@+id/tibiaPosition"
+            android:text="@string/tibiaPosition"
             android:gravity="center"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.16666666"/>
         <TextView
-            android:id="@+id/tibiaKoppel"
-            android:text="@string/tibiaKoppel"
+            android:id="@+id/tibiaTorque"
+            android:text="@string/tibiaTorque"
             android:gravity="center"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="0.16666666"/>
         <TextView
-            android:id="@+id/tibiaTemperatuur"
-            android:text="@string/tibiaTemperatuur"
+            android:id="@+id/tibiaTemperature"
+            android:text="@string/tibiaTemperature"
             android:gravity="center"
             android:layout_width="0dp"
             android:layout_height="match_parent"
