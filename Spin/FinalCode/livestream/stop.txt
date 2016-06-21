@@ -1,6 +1,6 @@
 +++ readlink -f ./stop.sh
-++ dirname /home/pi/RPi_Cam_Web_Interface/stop.sh
-+ cd /home/pi/RPi_Cam_Web_Interface
+++ dirname /home/pi/spInDP/Spin/FinalCode/livestream/stop.sh
++ cd /home/pi/spInDP/Spin/FinalCode/livestream
 + source ./config.txt
 ++ rpicamdir=html
 ++ webserver=apache

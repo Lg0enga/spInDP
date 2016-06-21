@@ -1,6 +1,6 @@
 # USAGE python object_movement.py --video
 # object_tracking_example.mp4 python object_movement.py
-# import the necessary packages 
+# import the necessary packages
 from collections import deque
 import numpy as np
 import argparse
@@ -22,60 +22,50 @@ from classes.ik import IK
 
 class Vision(object):
 
-	# construct the argument parse and parse the arguments
-	ap = argparse.ArgumentParser()
-	ap.add_argument("-c", "--color", type=str, default="", help="object color")
-	ap.add_argument("-b", "--buffer", type=int, default=8, help="max buffer size")
-	args = vars(ap.parse_args())
-	# define the lower and upper boundaries of the "threshold"
-	# in the HSV color space
-	if args["color"] == "lokaal":
-		blueDict = {
-	    'lowerColor' : (42,142,135),
-	    'upperColor' : (121,255,243)
-		}
-		redDict = {
-	    'lowerColor' : (151,130,132),
-	    'upperColor' : (187,255,255)
-		}
-	if args["color"] == "kuil":
-		blueDict = {
-	    'lowerColor' : (87,0,55),
-	    'upperColor' : (131,255,255)
-		}
-		redDict = {
-	    'lowerColor' : (0,187,143),
-	    'upperColor' : (11,255,255)
-		}
-	else:
-		blueDict = {
-		'lowerColor' : (42,142,135),
-	    'upperColor' : (121,255,243)
-		}
-		redDict = {
-	    # 'lowerColor' : (129,70,55),
-	    # 'upperColor' : (255,255,255)
-		'lowerColor' : (142,0,90),
-	    'upperColor' : (255,255,255)
-		}
-	# initialize the list of tracked points, the frame counter,
-	# and the coordinate deltas
-	pts = deque(maxlen=args["buffer"])
-	counter = 0
-	direction = ""
-	prikDelayCounter = 0
-	#initialize the pi Camera and set its settings
-	camera = PiCamera()
-	camera.resolution = (640, 480)
-	camera.framerate = 32
-	camera.awb_mode = "auto"
-	camera.meter_mode = "matrix"
-	#make an PiRGBArray which get filled with the frames captured
-	rawCapture = PiRGBArray(camera, size=(640,480))
-	#give 1 second for the pi to set itself correctly
-	time.sleep(1)
-
 	def __init__(self):
+		# construct the argument parse and parse the arguments
+		self.ap = argparse.ArgumentParser()
+		self.ap.add_argument("-c", "--color", type=str, default="", help="object color")
+		self.ap.add_argument("-b", "--buffer", type=int, default=8, help="max buffer size")
+		self.args = vars(self.ap.parse_args())
+		# define the lower and upper boundaries of the "threshold"
+		# in the HSV color space
+		if self.args["color"] == "lokaal":
+			self.blueDict = {
+		    'lowerColor' : (42,142,135),
+		    'upperColor' : (121,255,243)
+			}
+			self.redDict = {
+		    'lowerColor' : (151,130,132),
+		    'upperColor' : (187,255,255)
+			}
+		if self.args["color"] == "kuil":
+			self.blueDict = {
+		    'lowerColor' : (87,0,55),
+		    'upperColor' : (131,255,255)
+			}
+			self.redDict = {
+		    'lowerColor' : (0,187,143),
+		    'upperColor' : (11,255,255)
+			}
+		else:
+			self.blueDict = {
+			'lowerColor' : (42,142,135),
+		    'upperColor' : (121,255,243)
+			}
+			self.redDict = {
+		    # 'lowerColor' : (129,70,55),
+		    # 'upperColor' : (255,255,255)
+			'lowerColor' : (142,0,90),
+		    'upperColor' : (255,255,255)
+			}
+		# initialize the list of tracked points, the frame counter,
+		# and the coordinate deltas
+		self.pts = deque(maxlen=self.args["buffer"])
+		self.counter = 0
+		self.direction = ""
+		self.prikDelayCounter = 0
+
 		self._previousTime = 0
 		self._x = 0
     		self._y = 0
@@ -90,7 +80,7 @@ class Vision(object):
 		self._lastKnownX = 0
 
 		self._redLocated = False
-		
+
 		self._distance = 0
 		self._punctured = False
 
@@ -124,14 +114,14 @@ class Vision(object):
 	#function for determining the spiders walking direction
 	#x: X-coordinate of the vision object
 	def spiderDirection(self, x):
-		print "Spider Direction"	
+		print "Spider Direction"
 		#if the value of x is smaller than 270 it is considered left of center
 		if x < 260:
 			self._lastKnownX = x
 			self._x = 0
 			self._y = -300
 			self._r = 0
-		pself._Walk = True
+			self._Walk = True
 			cv2.putText(self.frame, "Left!",
 			(550, 20), cv2.FONT_HERSHEY_SIMPLEX,0.6, (0, 0, 255), 2)
 		#if the value of x is greater than 370 it is considered right of center
@@ -147,7 +137,7 @@ class Vision(object):
 		else:
 			self._lastKnownX = x
 			if self._distance < 60.0:
-				self._x = 400											
+				self._x = 400
 			else:
 				self._x = 900
 			self._y = 0
@@ -191,6 +181,17 @@ class Vision(object):
 			(10, self.frame.shape[0] - 30), cv2.FONT_HERSHEY_SIMPLEX,0.6, (255, 0, 0), 2)
 
 	def displayScreen(self):
+		#initialize the pi Camera and set its settings
+		self.camera = PiCamera()
+		self.camera.resolution = (640, 480)
+		self.camera.framerate = 32
+		self.camera.awb_mode = "auto"
+		self.camera.meter_mode = "matrix"
+		#make an PiRGBArray which get filled with the frames captured
+		self.rawCapture = PiRGBArray(self.camera, size=(640,480))
+		#give 1 second for the pi to set itself correctly
+		time.sleep(1)
+
 		#the main loop for displaying and running vision on the camara stream
 		for stream in self.camera.capture_continuous(self.rawCapture, format="bgr", use_video_port=True):
 			print(self._lastKnownX)
@@ -265,13 +266,13 @@ class Vision(object):
 					#if the distance from camera to the red balloon is smaller than 18cm it performs this block
 					#this is to prevent the prik function to be called more than once in less than 10 frames
 					if self.calculateDistance(M["m00"]) < 21.0:
-						if self.prikDelayCounter == 0:							
-							self.prikDelayCounter = self.counter			
-							self.punctureBalloon()												
-						elif (self.prikDelayCounter+10) < self.counter:		
-							self.prikDelayCounter = 0	
-					
-					
+						if self.prikDelayCounter == 0:
+							self.prikDelayCounter = self.counter
+							self.punctureBalloon()
+						elif (self.prikDelayCounter+10) < self.counter:
+							self.prikDelayCounter = 0
+
+
 					self._distance = self.calculateDistance(M["m00"])
 					#call to the spiderwalking function
 					#x: x-coordinate of object
@@ -317,13 +318,22 @@ class Vision(object):
 					self.displayDistanceToCenter("blue")
 
 					self._redLocated = False
+					# if self._punctured == True:
+						# print ("joined")
+						# self._WalkTest.join()
+						# sys.exit()
 					#self.spiderRotation(self._lastKnownX)
-				else:
-					self._redLocated = False
+				# else:
+					# self._redLocated = False
+					# if self._punctured == True:
+						# print ("joined")
+						# self._WalkTest.join()
+						# sys.exit()
 					#self.spiderRotation(self._lastKnownX)
 			#if only a red contour is found this code block runs
 			elif len(cnts) > 0:
 				print("red contour")
+				print(self._punctured)
 				# find the largest contour in the mask, then use
 				# it to compute the minimum enclosing circle and
 				# centroid
@@ -348,19 +358,23 @@ class Vision(object):
 					#if the distance from camera to the red balloon is smaller than 18cm it performs this block
 					#this is to prevent the prik function to be called more than once in less than 10 frames
 					if self.calculateDistance(M["m00"]) < 21.0:
-						if self.prikDelayCounter == 0:							
-							self.prikDelayCounter = self.counter			
-							self.punctureBalloon()												
-						elif (self.prikDelayCounter+10) < self.counter:		
-							self.prikDelayCounter = 0						
+						if self.prikDelayCounter == 0:
+							self.prikDelayCounter = self.counter
+							self.punctureBalloon()
+						elif (self.prikDelayCounter+10) < self.counter:
+							self.prikDelayCounter = 0
 
 					#call to the spiderwalking function
 					#x: x-coordinate of object
 					self._distance = self.calculateDistance(M["m00"])
 					self.spiderDirection(x)
 					self._lastKnownX = x
-				else:
-					self._redLocated = False
+				# else:
+					# self._redLocated = False
+					# if self._punctured == True:
+						# print ("joined")
+						# self._WalkTest.join()
+						# sys.exit()
 					#self.spiderRotation(self._lastKnownX)
 			#if only a blue contour is found
 			elif len(cnts2) > 0:
@@ -373,7 +387,10 @@ class Vision(object):
 				((x, y), radius) = cv2.minEnclosingCircle(c)
 				M = cv2.moments(c)
 				center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-
+				if self._punctured:
+						print ("joined")
+						self._WalkTest.join()
+						sys.exit()
 				# only proceed if the radius meets a minimum size
 				if radius > 20:
 					self._redLocated = False
@@ -390,7 +407,7 @@ class Vision(object):
 				#self.spiderRotation(self._lastKnownX)
 
 			#show the frame to our screen and increment the frame counter
-			cv2.imshow("Frame", self.frame)
+			#cv2.imshow("Frame", self.frame)
 			key = cv2.waitKey(1) & 0xFF
 			self.counter += 1
 			self.rawCapture.truncate(0)	#empty the frame for the next one
@@ -403,5 +420,5 @@ class Vision(object):
 		self.camera.release()
 		cv2.destroyAllWindows()
 
-vision = Vision()
-vision.displayScreen()
+bt = Vision()
+bt.displayScreen()

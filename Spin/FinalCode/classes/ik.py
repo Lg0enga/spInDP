@@ -108,6 +108,71 @@ class IK(object):
         leg_left_front.setLegBasePosZ(0)
         self.legs.append(leg_left_front)
 
+    def initInitialPositionsDance(self):
+        self._rideHeight = 60
+        self._initLegStretch = 120  #CoxaFootDist
+        self._servoUpdatePeriod = 13
+        self._speedStartLimit = 100
+        self._duration = 350
+        self._milimeterStep = 300
+        self._rotationDegree = 30
+        self._stepHeight = 40
+
+        self.legs = []
+        leg_right_front = Leg(0)
+        leg_right_front.setInitialFootPosX(round(math.sin(math.radians(self._COXA_ANGLE))*self._initLegStretch))
+        leg_right_front.setInitialFootPosY(round(math.cos(math.radians(self._COXA_ANGLE))*self._initLegStretch))
+        leg_right_front.setInitialFootPosZ(self._rideHeight)
+        leg_right_front.setLegBasePosX(self._X_COXA)
+        leg_right_front.setLegBasePosY(self._Y_COXA_FB)
+        leg_right_front.setLegBasePosZ(0)
+        self.legs.append(leg_right_front)
+
+        leg_right_middle = Leg(1)
+        leg_right_middle.setInitialFootPosX(0)
+        leg_right_middle.setInitialFootPosY(self._initLegStretch)
+        leg_right_middle.setInitialFootPosZ(self._rideHeight)
+        leg_right_middle.setLegBasePosX(0)
+        leg_right_middle.setLegBasePosY(self._Y_COXA_M)
+        leg_right_middle.setLegBasePosZ(0)
+        self.legs.append(leg_right_middle)
+
+        leg_right_rear = Leg(2)
+        leg_right_rear.setInitialFootPosX(-round(math.sin(math.radians(self._COXA_ANGLE))*self._initLegStretch))
+        leg_right_rear.setInitialFootPosY(round(math.cos(math.radians(self._COXA_ANGLE))*self._initLegStretch))
+        leg_right_rear.setInitialFootPosZ(self._rideHeight)
+        leg_right_rear.setLegBasePosX(-self._X_COXA) #min vergeten
+        leg_right_rear.setLegBasePosY(self._Y_COXA_FB)
+        leg_right_rear.setLegBasePosZ(0)
+        self.legs.append(leg_right_rear)
+
+        leg_left_rear = Leg(3)
+        leg_left_rear.setInitialFootPosX(-round(math.sin(math.radians(self._COXA_ANGLE))*self._initLegStretch))
+        leg_left_rear.setInitialFootPosY(-round(math.cos(math.radians(self._COXA_ANGLE))*self._initLegStretch))
+        leg_left_rear.setInitialFootPosZ(self._rideHeight)
+        leg_left_rear.setLegBasePosX(-self._X_COXA)
+        leg_left_rear.setLegBasePosY(-self._Y_COXA_FB)
+        leg_left_rear.setLegBasePosZ(0)
+        self.legs.append(leg_left_rear)
+
+        leg_left_middle = Leg(4)
+        leg_left_middle.setInitialFootPosX(0)
+        leg_left_middle.setInitialFootPosY(-self._initLegStretch)
+        leg_left_middle.setInitialFootPosZ(self._rideHeight)
+        leg_left_middle.setLegBasePosX(0)
+        leg_left_middle.setLegBasePosY(-self._Y_COXA_M)
+        leg_left_middle.setLegBasePosZ(0)
+        self.legs.append(leg_left_middle)
+
+        leg_left_front = Leg(5)
+        leg_left_front.setInitialFootPosX(round(math.sin(math.radians(self._COXA_ANGLE))*self._initLegStretch))
+        leg_left_front.setInitialFootPosY(-round(math.cos(math.radians(self._COXA_ANGLE))*self._initLegStretch))
+        leg_left_front.setInitialFootPosZ(self._rideHeight)
+        leg_left_front.setLegBasePosX(self._X_COXA)
+        leg_left_front.setLegBasePosY(-self._Y_COXA_FB)
+        leg_left_front.setLegBasePosZ(0)
+        self.legs.append(leg_left_front)
+
     def initInitialPositionsRace(self):
         self._stepHeight = 20
         self._speedStartLimit = 100

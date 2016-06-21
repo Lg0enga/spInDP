@@ -98,5 +98,5 @@ class DriveServos(object):
 
         print self._driveServoRightPulseTime, self._driveServoLeftPulseTime
 
-        self.pwm.set_pwm(0, 0, int(self._driveServoRightPulseTime))
-        self.pwm.set_pwm(1, 0, int(self._driveServoLeftPulseTime))
+        self.pwm.set_pwm(1, 0, int(self._driveServoRightPulseTime))
+        self.pwm.set_pwm(0, 0, int(self._driveServoLeftPulseTime))

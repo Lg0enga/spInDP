@@ -16,7 +16,7 @@ class Walk:
     backwards = False
     crab = False
 
-    speed = 250
+    speed = 1023
 
     serial = dynamixel.SerialStream(port="/dev/USB2AX",
                                     baudrate="1000000",
@@ -51,7 +51,7 @@ class Walk:
 
     def Prik(self):
 
-        csvFile = "/home/pi/spInDP/Spin/Loopscripts/prik.csv"
+        csvFile = "/home/pi/spInDP/Spin/Loopscripts/prik_paring.csv"
 
         with open('%s' % csvFile, 'rb') as f:
             records = csv.DictReader(f, delimiter=';')

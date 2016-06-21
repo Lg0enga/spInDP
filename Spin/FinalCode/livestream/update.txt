@@ -1,0 +1,10 @@
++++ readlink -f ./update.sh
+++ dirname /home/pi/spInDP/Spin/FinalCode/livestream/update.sh
++ cd /home/pi/spInDP/Spin/FinalCode/livestream
++ color_red='tput setaf 1'
++ color_green='tput setaf 2'
++ color_reset='tput sgr0'
++ trap fn_abort 0
++ set -e
+++ git ls-remote -h origin master
+++ awk '{print $1}'
