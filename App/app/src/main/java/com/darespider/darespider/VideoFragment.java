@@ -7,7 +7,9 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.HttpAuthHandler;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import com.darespider.darespider.R;
 
@@ -38,13 +40,24 @@ public class VideoFragment extends Fragment{
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.video_fragment, container, false);
 
-        Uri uri = Uri.parse("tcp/h264://10.42.0.80:9000");
-        String url1 ="tcp/h264://10.42.0.76:9000";
-        String url="https://www.google.com";
+        String video = "http://172.24.1.1/html";
         WebView web = (WebView) view.findViewById(R.id.vid);
+
+        web.setWebViewClient(new MyWebViewClient());
+
+
+        web.loadUrl(video);
         web.getSettings().setJavaScriptEnabled(true);
 
 
         return view;
+    }
+    private class MyWebViewClient extends WebViewClient {
+        public void onReceivedHttpAuthRequest(WebView view,
+                                              HttpAuthHandler handler, String host, String realm) {
+
+            handler.proceed("darespider", "darespider12301");
+
+        }
     }
 }

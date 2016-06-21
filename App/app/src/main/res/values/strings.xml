@@ -28,8 +28,9 @@
     <string name="mainPage">MainPage</string>
     <string name="video">Video</string>
     <string name="selectLeg">Selecteer een poot</string>
-    <string name="noInternet">Geen internet</string>
-    <string name="okay">Okee</string>
+    <string name="noConnection">Geen connectie met webserver</string>
+    <string name="restart">Herstart de app alstublieft</string>
+    <string name="okay">Ok</string>
     <string name="voltage">Voltage</string>
     <string name="power">Kracht</string>
     <string name="position">Stand</string>

@@ -188,8 +188,8 @@ public class MainFragment extends Fragment {
                             if(!mCallback.getInternet()){ // if there's no internet creates an AlertDialog
                                 while(alert){
                                     AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                                    builder.setTitle(R.string.noInternet);
-                                    builder.setMessage(R.string.noInternet);
+                                    builder.setTitle(R.string.noConnection);
+                                    builder.setMessage(R.string.restart);
                                     builder.setNegativeButton(R.string.okay, null);
                                     AlertDialog alertDialog = builder.create();
                                     alertDialog.show();
@@ -284,7 +284,7 @@ public class MainFragment extends Fragment {
                         coxaSnackbar.show();
                     }
                     else if(mCallback.getSelectedLeg() == -1 || mCallback.getSpiderList().size() == 0){
-                        Snackbar coxaSnackbar = Snackbar.make(v, R.string.noInternet, Snackbar.LENGTH_SHORT);
+                        Snackbar coxaSnackbar = Snackbar.make(v, R.string.noConnection, Snackbar.LENGTH_SHORT);
                         coxaSnackbar.show();
                     }else{
                         fragmentTransaction.add(R.id.fragment_container, lineGraphFragment);
@@ -299,7 +299,7 @@ public class MainFragment extends Fragment {
                         femurSnackbar.show();
                     }
                     else if(mCallback.getSpiderList().size() == 0){
-                        Snackbar femurSnackbar = Snackbar.make(v, R.string.noInternet, Snackbar.LENGTH_SHORT);
+                        Snackbar femurSnackbar = Snackbar.make(v, R.string.noConnection, Snackbar.LENGTH_SHORT);
                         femurSnackbar.show();
                     }else{
                         fragmentTransaction.add(R.id.fragment_container, lineGraphFragment);
@@ -314,7 +314,7 @@ public class MainFragment extends Fragment {
                         coxaSnackbar.show();
                     }
                     else if(mCallback.getSelectedLeg() == -1 || mCallback.getSpiderList().size() == 0){
-                        Snackbar tibiaSnackbar = Snackbar.make(v, R.string.noInternet, Snackbar.LENGTH_SHORT);
+                        Snackbar tibiaSnackbar = Snackbar.make(v, R.string.noConnection, Snackbar.LENGTH_SHORT);
                         tibiaSnackbar.show();
                     }else{
                         fragmentTransaction.add(R.id.fragment_container, lineGraphFragment);
